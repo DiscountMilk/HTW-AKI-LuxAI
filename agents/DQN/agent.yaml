@@ -1,0 +1,6 @@
+%YAML 1.2
+---
+
+IMPORT_PATH: 'agents.DQN.main.Agent'
+LOAD_PATH_P0: 'agents/DQN/agent.pth'
+LOAD_PATH_P1: 'agents/DQN/agent.pth'

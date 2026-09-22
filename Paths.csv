@@ -1,0 +1,4 @@
+Moodle Gruppe;Import_Path;Load_Path_P0;Load_Path_P1
+1;agents.default.default.DefaultAgent;;
+2;agents.Solution_92_Kaggle.agent.Agent;;
+3;agents.DQN.main.Agent;agents/DQN/agent.pth;agents/DQN/agent.pth
