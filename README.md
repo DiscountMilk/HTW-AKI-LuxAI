@@ -119,3 +119,4 @@ Depending on the agent, the runner uses these methods if they exist:
 - `set_to_eval_mode()` – Switches the agent into evaluation mode, disabling any training-specific behaviour such as exploration noise or gradient computation. Called by the runner when `train=False`.
 
 - `set_env_cfg(env_cfg)` – Passes the environment configuration object to the agent before the first game starts. Useful for reading environment constants such as map size, unit parameters, or match length.
+# HTW-AKI-LuxAI
