@@ -2,3 +2,7 @@ Moodle Gruppe;Import_Path;Load_Path_P0;Load_Path_P1
 1;agents.default.default.DefaultAgent;;
 2;agents.Solution_92_Kaggle.agent.Agent;;
 3;agents.DQN.main.Agent;agents/DQN/agent.pth;agents/DQN/agent.pth
+4;agents.team_eric_v1.main.Agent;agents/team_eric_v1/agent.pth;agents/team_eric_v1/agent.pth
+5;agents.team_eric_test.agent.Agent;;
+6;agents.team_eric_v2.agent.Agent;agents/team_eric_v2/agent.pth;agents/team_eric_v2/agent.pth
+7;agents.team_eric_v3.agent.Agent;agents/team_eric_v3/agent.pth;agents/team_eric_v3/agent.pth

@@ -1,0 +1,6 @@
+%YAML 1.2
+---
+
+IMPORT_PATH: 'agents.team_eric_v1.main.Agent'
+LOAD_PATH_P0: 'agents/team_eric_v1/agent.pth'
+LOAD_PATH_P1: 'agents/team_eric_v1/agent.pth'

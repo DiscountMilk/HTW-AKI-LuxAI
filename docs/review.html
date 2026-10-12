@@ -1,0 +1,412 @@
+<title>Team Eric LuxAI Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: vier Abschnitte, Diagramm zuerst; Regeln (handgeschrieben) amber, Gelerntes (θ) blau */
+:root {
+  --bg: #F5F6FA; --surface: #FFFFFF; --ink: #151A2D; --muted: #586079; --line: #DCE0EA; --soft: #EEF1F7;
+  --accent: #A35F00; --accent-soft: #FBF0DF;
+  --learn: #2a78d6; --learn-soft: #E6F0FB;
+  --good: #1E7A4C; --bad: #B3261E; --warn: #8A5A00;
+  --font-display: "Chakra Petch", "Avenir Next Condensed", "Arial Narrow", sans-serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --radius: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1222; --surface: #161B30; --ink: #E7EAF5; --muted: #9CA5C2; --line: #2B3252; --soft: #1C2240;
+    --accent: #F2A93B; --accent-soft: #2E2616; --learn: #3987e5; --learn-soft: #172645;
+    --good: #4CC38A; --bad: #F2726A; --warn: #F2C063; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1222; --surface: #161B30; --ink: #E7EAF5; --muted: #9CA5C2; --line: #2B3252; --soft: #1C2240;
+  --accent: #F2A93B; --accent-soft: #2E2616; --learn: #3987e5; --learn-soft: #172645;
+  --good: #4CC38A; --bad: #F2726A; --warn: #F2C063; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 4.5rem; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { background: var(--bg); color: var(--ink); font: 400 0.95rem/1.5 var(--font-body); }
+.wrap { max-width: 980px; margin-inline: auto; padding-inline: 20px; }
+
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 20px; padding-block: 12px; }
+.brand { font: 600 1.05rem var(--font-display); letter-spacing: 0.02em; }
+.brand span { color: var(--muted); font-weight: 500; }
+.weeks { display: flex; gap: 6px; flex-wrap: wrap; }
+.weeks button { font: 500 0.82rem var(--font-mono); padding: 5px 11px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.weeks button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+:focus-visible { outline: 2px solid var(--learn); outline-offset: 2px; }
+
+section { padding-block: 32px; }
+section + section { border-top: 1px solid var(--line); }
+h2 { font: 600 1.4rem var(--font-display); margin: 0 0 16px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+h2 .idx { font: 500 0.8rem var(--font-mono); color: var(--accent); }
+h3 { font: 600 1rem var(--font-display); margin: 0; display: flex; align-items: center; gap: 8px; }
+.note { color: var(--muted); font: 400 0.78rem var(--font-mono); margin: 10px 0 0; }
+.mono { font-family: var(--font-mono); }
+
+/* Markierung gegenüber der Vorwoche */
+.tag { font: 600 0.64rem var(--font-mono); letter-spacing: 0.05em; text-transform: uppercase; padding: 1px 5px; border-radius: 4px; margin-left: 6px; white-space: nowrap; vertical-align: 1px; }
+.tag.neu { color: var(--accent); background: var(--accent-soft); border: 1px solid var(--accent); }
+.tag.geaendert { color: var(--learn); background: var(--learn-soft); border: 1px solid var(--learn); }
+.tag.warn { color: var(--warn); border: 1px solid var(--warn); }
+.gone { text-decoration: line-through; color: var(--muted); }
+
+/* 1 Ergebnis */
+.wins { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 12px; }
+.win { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 6px; }
+.win .lbl { color: var(--muted); font-size: 0.85rem; }
+.win .val { font: 600 2.6rem/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.win .val small { font: 500 0.95rem var(--font-mono); color: var(--muted); margin-left: 8px; }
+.track { height: 10px; background: var(--soft); border-radius: 3px; overflow: hidden; }
+.fill { height: 100%; background: var(--learn); border-radius: 0 3px 3px 0; }
+.delta { font: 500 0.78rem var(--font-mono); color: var(--muted); }
+.delta.gut { color: var(--good); } .delta.schlecht { color: var(--bad); }
+
+/* 2 Flowchart */
+.flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; }
+.node { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 11px; display: grid; gap: 1px; color: var(--ink); text-decoration: none; position: relative; min-width: 0; }
+.node b { font: 600 0.92rem var(--font-display); }
+.node small { font: 400 0.74rem var(--font-mono); color: var(--muted); }
+.node.regel { border-color: var(--accent); background: var(--accent-soft); }
+.node.netz { border-color: var(--learn); background: var(--learn-soft); }
+a.node:hover { box-shadow: 0 0 0 2px var(--line); }
+.num { display: inline-grid; place-items: center; width: 1.35rem; height: 1.35rem; border-radius: 50%; background: var(--ink); color: var(--bg); font: 600 0.72rem var(--font-mono); flex: none; }
+.node .num { position: absolute; top: -9px; right: -9px; }
+.arrow { align-self: center; color: var(--muted); font-family: var(--font-mono); }
+.rowlabel { font: 500 0.72rem var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin: 16px 0 6px; }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 12px; font-size: 0.78rem; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; border: 1px solid; vertical-align: -1px; margin-right: 5px; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 12px; margin-top: 22px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+
+/* Safety-Entscheidung */
+.decide svg { width: 100%; max-width: 380px; height: auto; display: block; }
+.decide .box { fill: var(--surface); stroke: var(--line); }
+.decide .dia { fill: var(--accent-soft); stroke: var(--accent); }
+.decide .netbox { fill: var(--learn-soft); stroke: var(--learn); }
+.decide text { fill: var(--ink); font: 500 12px var(--font-mono); }
+.decide .lnk { stroke: var(--muted); fill: none; }
+.decide .lbl { fill: var(--muted); font-size: 11px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 500 0.78rem var(--font-mono); padding: 3px 9px; border-radius: 99px; border: 1px solid var(--line); }
+
+/* Balken: Maske, Reward */
+.bars { display: grid; gap: 9px; }
+.brow { display: grid; grid-template-columns: minmax(0, 150px) 1fr 46px; gap: 3px 10px; align-items: center; }
+.brow .name { font-size: 0.85rem; font-weight: 500; overflow-wrap: anywhere; }
+.brow .val { font: 500 0.82rem var(--font-mono); text-align: right; font-variant-numeric: tabular-nums; }
+.brow .sub { grid-column: 1 / -1; font: 400 0.72rem var(--font-mono); color: var(--muted); margin-top: -2px; }
+.fill.regel { background: var(--accent); }
+
+/* Feature-Vektor */
+.vec { display: flex; flex-wrap: wrap; gap: 10px 6px; align-items: flex-start; }
+.grp { display: grid; gap: 5px; justify-items: center; }
+.cells { display: flex; gap: 3px; }
+.cell { width: 22px; height: 22px; border-radius: 4px; background: var(--learn-soft); border: 1px solid var(--learn); }
+.grp span { font-size: 0.72rem; color: var(--muted); text-align: center; max-width: 13ch; line-height: 1.2; }
+.netline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font: 500 0.82rem var(--font-mono); color: var(--muted); }
+.netline b { color: var(--ink); background: var(--learn-soft); border: 1px solid var(--learn); border-radius: var(--radius); padding: 4px 9px; font-weight: 500; }
+
+/* 3 Kurve */
+.chart { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 12px 8px; }
+.chart svg { display: block; width: 100%; height: 260px; touch-action: pan-y; }
+.chart .tip { position: absolute; top: 18px; pointer-events: none; background: var(--ink); color: var(--bg); font: 400 0.75rem/1.4 var(--font-mono); padding: 6px 8px; border-radius: 5px; white-space: nowrap; }
+details { margin-top: 6px; font-size: 0.78rem; }
+summary { cursor: pointer; color: var(--muted); }
+.tblwrap { overflow: auto; max-height: 220px; border: 1px solid var(--line); border-radius: var(--radius); margin-top: 6px; }
+table { border-collapse: collapse; width: 100%; font: 400 0.78rem var(--font-mono); }
+th, td { text-align: left; padding: 5px 10px; border-bottom: 1px solid var(--line); }
+th { color: var(--muted); background: var(--soft); }
+
+/* 4 Schwächen -> Ideen */
+.sw { display: grid; gap: 8px; }
+.sw-row { display: grid; grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1fr); gap: 8px; align-items: stretch; }
+.sw-row > div { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 9px 12px; font-size: 0.9rem; }
+.sw-row > div:first-child { border-left: 3px solid var(--bad); }
+.sw-row > div:last-child { border-left: 3px solid var(--good); }
+.sw-row .arrow { text-align: center; }
+.sw-head { font: 500 0.72rem var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.ideas { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.idea { background: var(--accent-soft); border: 1px solid var(--accent); border-radius: var(--radius); padding: 7px 11px; font-size: 0.88rem; }
+@media (max-width: 560px) { .sw-row { grid-template-columns: 1fr; } .sw-row .arrow { display: none; } .win .val { font-size: 2.1rem; } }
+
+footer { padding-block: 24px 44px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.78rem; }
+</style>
+
+<header class="top">
+  <div class="wrap bar">
+    <div class="brand">Team Eric <span>Review</span></div>
+    <div class="weeks" id="weeks" role="group" aria-label="Woche wählen"></div>
+  </div>
+</header>
+
+<main class="wrap" id="app"></main>
+
+<footer class="wrap">Neue Woche: letzten Eintrag in <span class="mono">REVIEWS</span> kopieren und ändern. Neu, geändert und entfernt markiert die Seite selbst.</footer>
+
+<script>
+/* =====================================================================
+   DATEN – eine Woche = ein Eintrag. Neue Woche: letzten Eintrag kopieren.
+   Listen werden über das Feld "name" mit der Vorwoche verglichen.
+   ===================================================================== */
+const REVIEWS = [
+  {
+    woche: "W1",
+    datum: "09.10.2026",
+
+    // 1 Ergebnis der Woche
+    winrate: [
+      { name: "Kaggle_92", siege: 0, spiele: 20 },
+      { name: "DefaultAgent", siege: 10, spiele: 20 },
+    ],
+    eval_info: "",
+
+    // 2 Aufbau des Agenten
+    safety: [],                                       // { name: "regel_name" }
+    maske: [                                          // wert = Ø verbotene Aktionen pro Netz-Entscheidung
+      { name: "no_energy_to_move", label: "keine Energie", wert: 0.86 },
+      { name: "blocked", label: "Rand / Asteroid", wert: 0.67 },
+      { name: "multiple_player_on_one_spot", label: "Stapel: STAY verboten", wert: 0.40 },
+    ],
+    features: [                                       // n = Anzahl Zahlen im Vektor s_t
+      { name: "Energie", n: 2 },
+      { name: "Match-Zeit", n: 1 },
+      { name: "Relic", n: 3 },
+      { name: "Punktefeld", n: 3 },
+      { name: "Erkundung", n: 2 },
+      { name: "Stapel", n: 1 },
+    ],
+    netz: [12, 128, 128, 5],
+    reward: [                                         // anteil = Ø Anteil am Reward, letzte 100 Spiele
+      { name: "punktefeld", formel: "2.0", anteil: 0.28 },
+      { name: "team", formel: "0.2", anteil: 0.43 },
+      { name: "relic_naehe", formel: "0.1", anteil: 0.06 },
+      { name: "erkundung", formel: "0.2", anteil: 0.23, warn: true },
+    ],
+
+    // 3 Entwicklung des Trainings
+    kurve: {
+      block: 10,
+      quelle: "training_log.csv · 350 Spiele vs. DQN-Baseline (Gr. 3)",
+      punkte: [261, 345, 320, 167, 439, 388, 387, 498, 412, 376, 555, 426, 452, 343, 355, 420, 388, 414, 386, 438, 566, 578, 527, 414, 430, 576, 495, 641, 455, 504, 462, 541, 224, 351, 403],
+    },
+
+    // 4 Schwächen und Ideen
+    schwaechen: [
+      { name: "Kaggle", schwaeche: "0 / 20 gegen Kaggle_92", idee: "Trainingsgegner mischen (Gr. 1–3)" },
+      { name: "Energie", schwaeche: "7 % Spiele ohne Punkte – Energie leer", idee: "Feature: Richtung zum Energie-Feld" },
+      { name: "Team-Reward", schwaeche: "43 % des Rewards ist Team-Reward", idee: "Gewicht 0.2 → 0.05" },
+      { name: "Erkundung", schwaeche: "Erkundungs-Reward konstant", idee: "Reward nur bei neuem Relic-Feld" },
+      { name: "Q", schwaeche: "Q steigt weiter (24 → 40)", idee: "Double DQN (Folie 50)" },
+    ],
+    ideen: [
+      { name: "Sap auf Feld mit den meisten Gegnern im 3×3" },
+      { name: "Sap auf gespiegelte Punktefelder des Gegners" },
+    ],
+  },
+];
+
+/* =====================================================================
+   DARSTELLUNG – muss jede Woche nicht angefasst werden
+   ===================================================================== */
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+let cur, prev;
+function tag(list, item) {
+  if (!prev || !Array.isArray(prev[list])) return "";
+  const old = prev[list].find((p) => p.name === item.name);
+  if (!old) return '<span class="tag neu">neu</span>';
+  return JSON.stringify(old) !== JSON.stringify(item) ? '<span class="tag geaendert">geändert</span>' : "";
+}
+const gone = (list) => (!prev || !Array.isArray(prev[list])) ? [] : prev[list].filter((p) => !cur[list].some((c) => c.name === p.name));
+const arrow = '<span class="arrow" aria-hidden="true">→</span>';
+const node = (n) => `<${n.href ? `a href="#${n.href}"` : "div"} class="node ${n.typ || ""}">${n.num ? `<span class="num">${n.num}</span>` : ""}<b>${esc(n.t)}</b><small>${esc(n.s)}</small></${n.href ? "a" : "div"}>`;
+const flow = (nodes) => `<div class="flow">${nodes.map(node).join(arrow)}</div>`;
+
+function winTile(w) {
+  const pct = Math.round((w.siege / w.spiele) * 100);
+  const old = prev?.winrate?.find((p) => p.name === w.name);
+  let delta = "Basis fuer Vergleiche";
+  let cls = "";
+  if (old) {
+    const d = pct - Math.round((old.siege / old.spiele) * 100);
+    cls = d > 0 ? "gut" : d < 0 ? "schlecht" : "";
+    delta = `${d > 0 ? "+" : ""}${d} Pp. vs. ${esc(prev.woche)}`;
+  }
+  return `<div class="win"><span class="lbl">Winrate vs. ${esc(w.name)}</span>
+    <span class="val">${pct} %<small>${w.siege} / ${w.spiele}</small></span>
+    <div class="track" role="img" aria-label="${pct} Prozent"><div class="fill" style="width:${pct}%"></div></div>
+    <span class="delta ${cls}">${delta}</span></div>`;
+}
+
+function bars(list, items, max, fmt, cls) {
+  return `<div class="bars">${items.map((it) => `<div class="brow">
+      <span class="name">${esc(it.label ?? it.name)}${tag(list, it)}${it.warn ? '<span class="tag warn">prüfen</span>' : ""}</span>
+      <div class="track"><div class="fill ${cls}" style="width:${Math.min(100, (it.wert ?? it.anteil) / max * 100).toFixed(1)}%"></div></div>
+      <span class="val">${fmt(it.wert ?? it.anteil)}</span>
+      <span class="sub">${esc(it.formel ?? it.name)}</span></div>`).join("")}
+    ${gone(list).map((g) => `<div class="gone mono">${esc(g.name)}</div>`).join("")}</div>`;
+}
+
+function safetyDiagram(R) {
+  return `<div class="decide"><svg viewBox="0 0 380 150" role="img" aria-label="SafetyRules: greift eine Regel, entscheidet sie; sonst das Netz">
+      <polygon class="dia" points="95,15 175,60 95,105 15,60"/>
+      <text x="95" y="56" text-anchor="middle">Regel</text><text x="95" y="72" text-anchor="middle">greift?</text>
+      <path class="lnk" d="M175 60 H240" marker-end="url(#ah)"/><text class="lbl" x="207" y="52" text-anchor="middle">ja</text>
+      <rect class="box" x="242" y="40" width="130" height="40" rx="6"/><text x="307" y="65" text-anchor="middle">Aktion direkt</text>
+      <path class="lnk" d="M95 105 V122" marker-end="url(#ah)"/><text class="lbl" x="104" y="117">nein</text>
+      <rect class="netbox" x="25" y="124" width="140" height="24" rx="6"/><text x="95" y="140" text-anchor="middle">Netz entscheidet</text>
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="var(--muted)"/></marker></defs>
+    </svg></div>
+    <div class="chips">${R.safety.length ? R.safety.map((s) => `<span class="chip">${esc(s.name)}${tag("safety", s)}</span>`).join("") : '<span class="chip">0 Regeln aktiv</span>'}${gone("safety").map((g) => `<span class="chip gone">${esc(g.name)}</span>`).join("")}</div>`;
+}
+
+function featureDiagram(R) {
+  const total = R.features.reduce((s, f) => s + f.n, 0);
+  return `<div class="vec">${R.features.map((f) => `<div class="grp"><div class="cells">${'<div class="cell"></div>'.repeat(f.n)}</div><span>${esc(f.name)}${tag("features", f)}</span></div>`).join("")}</div>
+    ${gone("features").length ? `<div class="chips">${gone("features").map((g) => `<span class="chip gone">${esc(g.name)}</span>`).join("")}</div>` : ""}
+    <div class="netline"><span>s_t = ${total} Zahlen</span>${arrow}<b>Q-Netz ${R.netz.join(" → ")}</b>${arrow}<span>${R.netz[R.netz.length - 1]} Q-Werte</span></div>`;
+}
+
+function render(i) {
+  cur = REVIEWS[i]; prev = REVIEWS[i - 1];
+  const R = cur;
+  const maxMask = Math.max(1, ...R.maske.map((m) => m.wert));
+  document.getElementById("app").innerHTML = `
+  <section id="ergebnis">
+    <h2><span class="idx">1</span>Ergebnis ${esc(R.woche)} · ${esc(R.datum)}</h2>
+    <div class="wins">${R.winrate.map(winTile).join("")}</div>
+    <p class="note">${esc(R.eval_info)}</p>
+  </section>
+
+  <section id="aufbau">
+    <h2><span class="idx">2</span>Aufbau des Agenten</h2>
+    <p class="rowlabel">Entscheiden jede Unit, jeder Schritt</p>
+    ${flow([
+      { t: "obs", s: "" },
+      { t: "World", s: "" },
+      { t: "Safety Rules", s: "", typ: "regel", num: 1, href: "k-safety" },
+      { t: "Input Features", s: "", num: 2, href: "k-features" },
+      { t: "Action Mask", s: "", typ: "regel", num: 3, href: "k-maske" },
+      { t: "Q-Netz", s: "", typ: "netz" },
+      { t: "Epsilon-greedy", s: "" },
+      { t: "Aktion", s: "" },
+    ])}
+
+    <div class="legend"><span><i style="border-color:var(--accent);background:var(--accent-soft)"></i>Regel (handgeschrieben)</span><span><i style="border-color:var(--learn);background:var(--learn-soft)"></i>gelernt</span></div>
+
+    <div class="cards">
+      <div class="card" id="k-safety"><h3><span class="num">1</span>Safety Rules</h3>${safetyDiagram(R)}</div>
+      <div class="card" id="k-maske"><h3><span class="num">3</span>Action Mask</h3>
+        ${bars("maske", R.maske, maxMask, (v) => v.toFixed(2), "regel")}
+        <p class="note">Ø verbotene Aktionen pro Netz-Entscheidung</p></div>
+      <div class="card" id="k-features"><h3><span class="num">2</span>Input Features</h3>${featureDiagram(R)}</div>
+      <div class="card" id="k-reward"><h3><span class="num">4</span>Reward</h3>
+        ${bars("reward", R.reward, Math.max(...R.reward.map((r) => r.anteil)), (v) => `${Math.round(v * 100)} %`, "")}
+        <p class="note">Anteil am Reward letzte 100 Spiele</p></div>
+    </div>
+  </section>
+
+  <section id="training">
+    <h2><span class="idx">3</span>Entwicklung des Trainings</h2>
+    <div class="chart" id="c-punkte"><h3>Druchsch. Punkte pro Spiel (je ${R.kurve.block} Spiele)</h3><svg aria-label="Linie: Durchschnittspunkte pro Spiel im Training"></svg><div class="tip" hidden></div></div>
+    <p class="note">${esc(R.kurve.quelle)}${prev?.kurve ? ` · gestrichelt: ${esc(prev.woche)}` : ""}</p>
+  </section>
+
+  <section id="schwaechen">
+    <h2><span class="idx">4</span>Schwächen und Ideen</h2>
+    <div class="sw">
+      <div class="sw-row"><span class="sw-head">Schwäche</span><span></span><span class="sw-head">Idee</span></div>
+      ${R.schwaechen.map((s) => `<div class="sw-row"><div>${esc(s.schwaeche)}${tag("schwaechen", s)}</div><span class="arrow" aria-hidden="true">→</span><div>${esc(s.idee)}</div></div>`).join("")}
+      ${gone("schwaechen").map((g) => `<div class="gone">${esc(g.schwaeche)}</div>`).join("")}
+    </div>
+    <div class="ideas">${R.ideen.map((d) => `<span class="idea">${esc(d.name)}${tag("ideen", d)}</span>`).join("")}</div>
+  </section>`;
+  drawChart();
+}
+
+/* ---------- Linien-Diagramm mit Fadenkreuz-Tooltip ---------- */
+function niceTicks(max, count = 4) {
+  const raw = max / count, mag = 10 ** Math.floor(Math.log10(raw));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= raw);
+  return Array.from({ length: Math.ceil(max / step) + 1 }, (_, i) => i * step);
+}
+function drawChart() {
+  const box = document.getElementById("c-punkte");
+  if (!box) return;
+  const css = getComputedStyle(document.documentElement);
+  const col = (v) => css.getPropertyValue(v).trim();
+  const block = cur.kurve.block;
+  const series = [
+    ...(prev?.kurve ? [{ name: prev.woche, values: prev.kurve.punkte, color: col("--muted"), dash: true }] : []),
+    { name: cur.woche, values: cur.kurve.punkte, color: col("--learn") },
+  ];
+  const svg = box.querySelector("svg"), tip = box.querySelector(".tip");
+  const W = svg.clientWidth || 600, H = svg.clientHeight || 260;
+  const m = { l: 42, r: series.length > 1 ? 34 : 14, t: 12, b: 26 };
+  const n = Math.max(...series.map((s) => s.values.length));
+  const ticks = niceTicks(Math.max(...series.flatMap((s) => s.values)) * 1.05);
+  const yMax = ticks[ticks.length - 1];
+  const x = (i) => m.l + (n === 1 ? 0 : (i / (n - 1)) * (W - m.l - m.r));
+  const y = (v) => H - m.b - (v / yMax) * (H - m.t - m.b);
+  const ink = col("--muted"), grid = col("--line"), surf = col("--surface");
+  const txt = (xx, yy, s, anchor = "end") => `<text x="${xx}" y="${yy}" text-anchor="${anchor}" font-size="11" font-family="IBM Plex Mono, monospace" fill="${ink}">${s}</text>`;
+  let s = `<rect width="${W}" height="${H}" fill="${surf}"/>`;
+  s += ticks.map((t) => `<line x1="${m.l}" x2="${W - m.r}" y1="${y(t)}" y2="${y(t)}" stroke="${grid}"/>${txt(m.l - 6, y(t) + 4, Math.round(t))}`).join("");
+  s += [0, Math.floor((n - 1) / 2), n - 1].map((i) => txt(x(i), H - 8, `Spiel ${(i + 1) * block}`, i === 0 ? "start" : i === n - 1 ? "end" : "middle")).join("");
+  series.forEach((se) => {
+    const d = se.values.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
+    if (!se.dash) s += `<path d="${d}L${x(se.values.length - 1)},${y(0)}L${x(0)},${y(0)}Z" fill="${se.color}" fill-opacity="0.10"/>`;
+    s += `<path d="${d}" fill="none" stroke="${se.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"${se.dash ? ' stroke-dasharray="5 4"' : ""}/>`;
+    const li = se.values.length - 1;
+    s += `<circle cx="${x(li)}" cy="${y(se.values[li])}" r="4" fill="${se.color}" stroke="${surf}" stroke-width="2"/>`;
+    if (series.length > 1) s += txt(x(li) + 7, y(se.values[li]) + 4, se.name, "start");
+  });
+  s += `<g class="hover" visibility="hidden"><line class="cx" y1="${m.t}" y2="${H - m.b}" stroke="${ink}" stroke-dasharray="2 3"/>${series.map((se) => `<circle r="5" fill="${se.color}" stroke="${surf}" stroke-width="2"/>`).join("")}</g>`;
+  s += `<rect class="hit" x="${m.l}" width="${W - m.l - m.r}" height="${H}" fill="transparent"/>`;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.innerHTML = s;
+  const g = svg.querySelector(".hover"), hit = svg.querySelector(".hit"), cx = svg.querySelector(".cx");
+  const move = (ev) => {
+    const r = svg.getBoundingClientRect();
+    const i = Math.max(0, Math.min(n - 1, Math.round(((ev.clientX - r.left - m.l) / (W - m.l - m.r)) * (n - 1))));
+    g.setAttribute("visibility", "visible");
+    cx.setAttribute("x1", x(i)); cx.setAttribute("x2", x(i));
+    g.querySelectorAll("circle").forEach((c, k) => { const v = series[k].values[i]; c.setAttribute("cx", x(i)); c.setAttribute("cy", v == null ? -99 : y(v)); });
+    tip.hidden = false;
+    tip.innerHTML = `Spiele ${i * block + 1}–${(i + 1) * block}<br>` + series.filter((se) => se.values[i] != null).map((se) => `${se.name}: Ø ${Math.round(se.values[i])} Punkte`).join("<br>");
+    tip.style.left = `${Math.max(4, Math.min(x(i) + 24, box.clientWidth - tip.offsetWidth - 4))}px`;
+  };
+  hit.addEventListener("pointermove", move);
+  hit.addEventListener("pointerdown", move);
+  hit.addEventListener("pointerleave", () => { g.setAttribute("visibility", "hidden"); tip.hidden = true; });
+  box.querySelector("details")?.remove();
+  box.insertAdjacentHTML("beforeend", `<details><summary>Werte als Tabelle</summary><div class="tblwrap"><table><thead><tr><th>Spiele</th>${series.map((se) => `<th>${se.name}</th>`).join("")}</tr></thead><tbody>${Array.from({ length: n }, (_, i) => `<tr><td>${i * block + 1}–${(i + 1) * block}</td>${series.map((se) => `<td>${se.values[i] == null ? "–" : Math.round(se.values[i])}</td>`).join("")}</tr>`).join("")}</tbody></table></div></details>`);
+}
+
+/* ---------- Wochen-Auswahl ---------- */
+let selected = REVIEWS.length - 1;
+try { const saved = localStorage.getItem("review-week"); const k = REVIEWS.findIndex((r) => r.woche === saved); if (k >= 0) selected = k; } catch (e) {}
+function select(i) {
+  document.querySelectorAll("#weeks button").forEach((b, k) => b.setAttribute("aria-pressed", String(k === i)));
+  try { localStorage.setItem("review-week", REVIEWS[i].woche); } catch (e) {}
+  render(i);
+}
+document.getElementById("weeks").innerHTML = REVIEWS.map((r) => `<button type="button" id="week-${esc(r.woche)}" aria-pressed="false">${esc(r.woche)} · ${esc(r.datum.slice(0, 5))}</button>`).join("");
+document.querySelectorAll("#weeks button").forEach((b, i) => b.addEventListener("click", () => select(i)));
+select(selected);
+let resizeTimer, lastWidth = 0;
+new ResizeObserver(([e]) => {
+  if (Math.round(e.contentRect.width) === lastWidth) return;   // nur bei neuer Breite neu zeichnen
+  lastWidth = Math.round(e.contentRect.width);
+  clearTimeout(resizeTimer); resizeTimer = setTimeout(drawChart, 120);
+}).observe(document.getElementById("app"));
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawChart);
+new MutationObserver(drawChart).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+</script>

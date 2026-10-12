@@ -1,11 +1,5 @@
-import os
-import numpy as np
 import torch
 import torch.nn as nn
-import torch.optim as optim
-from typing import Optional
-import agents.DQN.feat_generator as fg
-
 # ----------------------------
 # Q-Network (shared across all units)
 # ----------------------------
@@ -24,6 +18,11 @@ class QNet(nn.Module):
         return self.net(x)
 
 
+import os
+import numpy as np
+import torch.optim as optim
+from typing import Optional
+import agents.team_eric_v1.feat_generator as fg
 # ----------------------------
 # Lux DQN Agent (online TD, tailored features)
 # ----------------------------
@@ -36,7 +35,7 @@ class Agent:
     def __init__(
         self,
         player: str,
-        name: str='DQN Agent',
+        name: str='Team Eric Agent',
         learning_rate: float = 1e-3,
         gamma: float = 0.99,
         epsilon: float = 0.1,

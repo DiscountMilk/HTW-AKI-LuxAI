@@ -2,7 +2,7 @@
 World = alles, was der Agent über das laufende Spiel weiß.
 obs zeigt nur den aktuellen Schritt und nur das Sichtfeld. World merkt sich mehr.
 
-Regel: Nur update() schreibt. rules.py und brain.py lesen nur (Attribute + Abfragen).
+Regel: Nur update() schreibt. agent_rules.py und agent_brain.py lesen nur (Attribute + Abfragen).
 
 Neues Wissen hinzufügen:
   1. Attribut in __init__() anlegen       (Startwert = "weiß ich noch nicht")
@@ -54,6 +54,7 @@ class World:
         self.point_gain = 0                                    # Punkte seit letztem Schritt (= Reward)
         self.units = []                                        # eigene Einheiten (Liste von Unit)
         self.enemies = np.zeros((0, 2), dtype=int)             # sichtbare Gegner-Positionen
+        self.new_known = set()                                 # Relic-Felder, deren Status gerade geklärt wurde
 
     # ------------------------------------------------------------------
     # 2 update - jeden Schritt, als Erstes in act()
@@ -97,7 +98,9 @@ class World:
         """Punkte-Zuwachs = Anzahl besetzter Punktefelder (jedes Feld zählt nur einmal).
         Bekannte Punktefelder abziehen, über den Rest der unbekannten besetzten Felder entscheiden:
           Rest 0                -> keins der unbekannten Felder ist ein Punktefeld
-          Rest == Anzahl        -> alle unbekannten Felder sind Punktefelder"""
+          Rest == Anzahl        -> alle unbekannten Felder sind Punktefelder
+        Geklärte Felder landen in new_known (für den Erforschen-Reward)."""
+        self.new_known = set()
         if self.match_step == 0:
             return
         occupied = {tuple(u.pos) for u in self.units if self.near_relic(u.pos)}
@@ -106,9 +109,11 @@ class World:
         if rest == 0:
             for p in unknown:
                 self.point_tile[p] = 0
+            self.new_known = set(unknown)
         elif rest == len(unknown):
             for p in unknown:
                 self.point_tile[p] = 1
+            self.new_known = set(unknown)
         # ponytail: 0 < rest < len(unknown) wird ignoriert; Upgrade: Kandidaten pro Feld über Schritte zählen
 
     # ------------------------------------------------------------------

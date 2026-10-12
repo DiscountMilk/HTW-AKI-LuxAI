@@ -25,7 +25,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from agents.team_eric_v2.world import MAX_UNIT_ENERGY, MOVES
+from agents.team_eric_v2.agent_world import MAX_UNIT_ENERGY, MOVES
 
 # ----------------------------------------------------------------------
 # 1 Stellschrauben
@@ -98,15 +98,17 @@ class Brain:
 
     # --- Wofür es belohnt wird ---------------------------------------
     def reward(self, unit, w):
-        """Wie gut war der letzte Schritt für diese Einheit? Neue Terme einfach addieren."""
-        # TODO hier Implementieren
+        """Wie gut war der letzte Schritt für diese Einheit? Neuer Term = neue Zeile in terms."""
         x, y = unit.pos
-        r = 0.0
-        r += 1.0 * (w.point_tile[x, y] == 1)   # steht auf bekanntem Punktefeld -> eigener Verdienst
-        r += 0.2 * w.point_gain                # kleiner Team-Anteil, deckt noch unbekannte Punktefelder ab
-        r += 0.05 * w.near_relic(unit.pos)     # in der Nähe einer Relic -> Anreiz zum Suchen
-        r += 1.0 * (w.point_tile[x, y] == 1) / w.units_at(unit.pos)   # Punktefeld; gestapelt teilen, zählt nur 1x
-        return float(r)
+        terms = {                                        # Name -> Wert. Neuer Term = neue Zeile
+            "punktefeld": 2.0 * (w.point_tile[x, y] == 1) / w.units_at(unit.pos),   # gestapelt teilen, zählt nur 1x
+            "team": 0.2 * w.point_gain,                  # Team-Anteil, deckt unbekannte Punktefelder ab
+            "relic_naehe": 0.1 * w.near_relic(unit.pos),  # Anreiz zum Suchen
+            "erkundung": 0.2 * 1, # Unbekannte Felder erforschen gibt mehr rewqard
+        }
+        for name, value in terms.items():
+            self.stats.setdefault(f"r_{name}", []).append(float(value))   # fürs Training-Log
+        return float(sum(terms.values()))
 
     # --- Entscheiden ---------------------------------------------------
     def pick(self, s, mask):

@@ -8,6 +8,7 @@ from importlib import import_module
 
 import numpy as np
 import pandas
+from luxai_s3.params import EnvParams, env_params_ranges
 from luxai_s3.wrappers import LuxAIS3GymEnv, RecordEpisode
 
 
@@ -97,7 +98,7 @@ def _get_path_value(paths_df, moodle_group, column_name):
     return matches[0]
 
 
-def run_agents(moodle_group_player_0, moodle_group_player_1, games_to_play=10, train=True, save_frequency=500):
+def run_agents(moodle_group_player_0, moodle_group_player_1, games_to_play=10, train=True, save_frequency=500, matches_per_game=3):
     paths = pandas.read_csv(os.path.join(_base_dir, "Paths.csv"), encoding="cp1252", sep=";")
 
     import_path_player_0 = _get_path_value(paths, moodle_group_player_0, "Import_Path")
@@ -148,7 +149,11 @@ def run_agents(moodle_group_player_0, moodle_group_player_1, games_to_play=10, t
         rng = np.random.default_rng()
         seed_val = int(rng.integers(0, 1_000_000))
         print(f"Seed: {seed_val}")
-        obs, info = env.reset(seed=seed_val)
+        # Zufällige Spielparameter wie im Env selbst würfeln, aber die Anzahl Matches pro Spiel festlegen.
+        # (options["params"] ersetzt im Env ALLE Parameter, daher müssen wir die Zufallswerte selbst setzen.)
+        random_params = {k: rng.choice(v).item() for k, v in env_params_ranges.items()}
+        params = EnvParams(**random_params, match_count_per_episode=matches_per_game)
+        obs, info = env.reset(seed=seed_val, options={"params": params})
 
         # Provide environment configuration to agents.
         # Only contains observable game parameters such as map size, max number of steps, etc.
