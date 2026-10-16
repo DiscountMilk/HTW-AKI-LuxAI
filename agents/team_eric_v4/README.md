@@ -21,5 +21,6 @@ Aktuelle Probleme:
 - SAP nicht impl.
 - Training immer als Spieler 0 (Spiegel soll später kommen)
 - Regelmäßiger switch gegen verschiedene Gegner? (Mal Kaggle, mal Default, mal ...) -> Jedes mal Replay Buffer leeren?
+negative rewards einbauen
 - Mal richtig lange trainieren lassen
 - VM - SSH? Torch?
