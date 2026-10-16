@@ -6,3 +6,4 @@ Moodle Gruppe;Import_Path;Load_Path_P0;Load_Path_P1
 5;agents.team_eric_test.agent.Agent;;
 6;agents.team_eric_v2.agent.Agent;agents/team_eric_v2/agent.pth;agents/team_eric_v2/agent.pth
 7;agents.team_eric_v3.agent.Agent;agents/team_eric_v3/agent.pth;agents/team_eric_v3/agent.pth
+8;agents.team_eric_v4.agent.Agent;agents/team_eric_v4/agent.pth;agents/team_eric_v4/agent.pth
