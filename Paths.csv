@@ -7,3 +7,8 @@ Moodle Gruppe;Import_Path;Load_Path_P0;Load_Path_P1
 6;agents.team_eric_v2.agent.Agent;agents/team_eric_v2/agent.pth;agents/team_eric_v2/agent.pth
 7;agents.team_eric_v3.agent.Agent;agents/team_eric_v3/agent.pth;agents/team_eric_v3/agent.pth
 8;agents.team_eric_v4.agent.Agent;agents/team_eric_v4/agent.pth;agents/team_eric_v4/agent.pth
+9;agents.kaggle_3rd_lux3.Agent;;
+10;agents.kaggle_8th_gregor.Agent;;
+11;agents.hybrid_dqn_afc.Agent;;
+12;agents.sherlock_team15.Agent;agents/sherlock_team15/weights/agent_p0.pth;agents/sherlock_team15/weights/agent_p1.pth
+13;agents.team_eric_v5.agent.Agent;agents/team_eric_v5/agent.pth;agents/team_eric_v5/agent.pth

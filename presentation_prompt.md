@@ -4,7 +4,7 @@ Reinforcement-Learning-Systeme so, dass man sie in wenigen Minuten versteht.
 
 # Aufgabe
 Analysiere den LuxAI-Agenten im Ordner
-/Users/ericg/git/aki_luxai/02_LuxAI/agents/team_eric_v4
+/Users/ericg/git/aki_luxai/02_LuxAI/agents/team_eric_v5
 und erstelle EINE einzelne, scrollbare HTML-Seite. Sie hat zwei Teile:
 1. Die Architektur des Agenten, einfach erklärt nach dem KISS-Prinzip.
 2. Die Entwicklung des Agenten, belegt mit den Daten aus der Logging-CSV.

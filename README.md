@@ -90,6 +90,22 @@ You can visualize the replays here:
 
 - https://s3vis.lux-ai.org/
 
+## External opponent agents
+
+Downloaded public LuxAI S3 agents (with weights) to play against. Use the group id in `main.py`.
+
+| Group | Folder | Strength | Source |
+|---|---|---|---|
+| 9 | `agents/kaggle_3rd_lux3` | very good (3rd place Kaggle, imitation-learning UNets) | https://github.com/andreyd41/lux3-bot (release 0.4.8, `fp`, Apache-2.0) |
+| 10 | `agents/kaggle_8th_gregor` | very good (8th place Kaggle, imitation-learning UNets) | https://github.com/gregorlied/lux-s3 (release v73a, Apache-2.0) |
+| 11 | `agents/hybrid_dqn_afc` | medium (rules + DQN, course project) | https://github.com/BlackMagicCoder/luxai-s3-hybrid-agent (checkpoint `afc_dqn_v3_1`, no license) |
+| 12 | `agents/sherlock_team15` | medium (Double-DQN ensemble, course project) | https://github.com/elhassanmahmoud/sherlock-luxAI-team15 (no license) |
+
+Notes:
+- Groups 9 and 10 keep game knowledge in class-level globals: do not let one of them play against itself.
+- `hybrid_dqn_afc` uses `agents/DQN/feat_generator.py` (same professor file as the original).
+- Groups 11 and 12 have no license: use them only locally as sparring partners, do not redistribute.
+
 ## Agent configuration
 
 Agent selection is controlled through `Paths.csv`.

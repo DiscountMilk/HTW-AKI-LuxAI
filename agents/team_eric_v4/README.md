@@ -24,3 +24,5 @@ Aktuelle Probleme:
 negative rewards einbauen
 - Mal richtig lange trainieren lassen
 - VM - SSH? Torch?
+
+
