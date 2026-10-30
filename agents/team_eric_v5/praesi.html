@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Team Eric V5</title>
+<style>
+:root{
+  --ink:#111827; --muted:#5b6472; --line:#e3e6ea; --soft:#f5f6f8; --bg:#ffffff;
+  --c-io:#8a93a0; --c-mirror:#5f6b7a; --c-world:#0f8a7e; --c-feat:#2563eb;
+  --c-cnn:#7c3aed; --c-act:#c2700a; --c-rew:#15803d; --c-train:#d61f4f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#e9ecef;overflow:hidden}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink)}
+#stage{position:absolute;left:50%;top:50%;width:1280px;height:720px;transform-origin:center center}
+.slide{position:absolute;inset:0;background:var(--bg);padding:44px 60px 64px;display:none;flex-direction:column;overflow:hidden}
+.slide.on{display:flex}
+h1{font-size:46px;line-height:1.15;font-weight:700;letter-spacing:-.01em}
+h2{font-size:34px;font-weight:700;margin-bottom:14px;letter-spacing:-.01em}
+h2 .tag{display:inline-block;width:14px;height:14px;border-radius:3px;margin-right:12px;vertical-align:middle;position:relative;top:-3px}
+h3{font-size:22px;font-weight:650;margin-bottom:8px}
+p,li,td,th{font-size:20px;line-height:1.4}
+.lead{font-size:22px;line-height:1.45;color:var(--ink);max-width:1080px;margin-bottom:18px}
+.lead b{font-weight:650}
+.muted{color:var(--muted)}
+.small{font-size:17px;line-height:1.4}
+.tiny{font-size:15px;color:var(--muted)}
+.row{display:flex;gap:32px}
+.col{flex:1;min-width:0}
+ul.clean{list-style:none}
+ul.clean li{padding-left:22px;position:relative;margin-bottom:9px}
+ul.clean li::before{content:"";position:absolute;left:2px;top:.6em;width:8px;height:8px;border-radius:50%;background:var(--ink)}
+.term{border-bottom:1px dotted var(--muted)}
+.def{color:var(--muted);font-size:.9em}
+.card{border:1px solid var(--line);border-radius:10px;padding:16px 18px;background:#fff}
+.kpis{display:flex;gap:16px;margin-bottom:14px}
+.kpi{flex:1;border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+.kpi .v{font-size:30px;font-weight:700;letter-spacing:-.01em}
+.kpi .l{font-size:16px;color:var(--muted);line-height:1.3}
+.here{position:absolute;right:28px;top:22px;width:250px;opacity:.95}
+.here .lbl{font-size:12px;color:var(--muted);text-align:right;margin-bottom:2px}
+table{border-collapse:collapse;width:100%}
+td,th{padding:6px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-weight:650;font-size:17px;color:var(--muted)}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+code{font-size:.9em;background:var(--soft);padding:1px 5px;border-radius:4px}
+pre.pc{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:18.5px;line-height:1.55;background:var(--soft);border-radius:10px;padding:16px 20px}
+pre.pc span.l{display:block;padding-left:12px;border-left:5px solid transparent}
+pre.pc .cm{color:var(--muted)}
+.backup-badge{position:absolute;top:18px;right:24px;font-size:14px;font-weight:650;color:#fff;background:var(--muted);padding:3px 10px;border-radius:20px}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+.three .card h3{display:flex;align-items:center;gap:8px}
+.three li{font-size:18px}
+.hyp{font-style:italic}
+.pill{display:inline-block;font-size:14px;font-weight:650;padding:2px 9px;border-radius:20px;color:#fff;margin-right:6px}
+/* UI */
+#bar{position:fixed;left:0;bottom:0;height:5px;background:var(--ink);transition:width .2s}
+#nav{position:fixed;right:16px;bottom:14px;display:flex;gap:8px;align-items:center;font-size:15px;color:var(--muted)}
+#nav button{font:inherit;font-size:18px;width:38px;height:34px;border:1px solid #cfd4da;border-radius:8px;background:#fff;color:var(--ink);cursor:pointer}
+#nav button:hover{background:var(--soft)}
+#num{min-width:78px;text-align:center;font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<div id="stage">
+
+<!-- 1 Titel -->
+<section class="slide" style="justify-content:center">
+  <div class="tiny" style="margin-bottom:18px">LuxAI Season 3 · Abschlusspräsentation · 10 min</div>
+  <h1>Team Eric V5</h1>
+  <p class="lead" style="margin-top:18px;font-size:26px;max-width:1000px">
+    Ein <b>Deep-Q-Learning</b>-Agent: Ein CNN schaut auf die ganze Karte und schätzt für jede Unit,
+    welcher Zug wie viel künftige Belohnung bringt.
+  </p>
+  <p class="small muted" style="max-width:980px">
+    <span class="term">Q-Wert</span> <span class="def">= Schätzung „wie viel Reward kommt noch, wenn ich jetzt diese Aktion wähle“.</span>
+    Der Agent wählt pro Unit die Aktion mit dem höchsten Q-Wert.
+  </p>
+  <div id="titlePipe" style="margin-top:34px;width:760px"></div>
+</section>
+
+<!-- 2 Gesamtbild -->
+<section class="slide">
+  <h2>Gesamtbild</h2>
+  <p class="lead">Oben: was in <b>einem Zug</b> passiert. Unten: was danach <b>gelernt</b> wird (nur im Training, nur als Spieler 0).</p>
+  <div id="bigPipe" style="flex:1;display:flex;align-items:center"></div>
+  <p class="tiny">Jede Farbe steht für einen Baustein und kommt auf allen folgenden Folien wieder. Eine Datei pro Baustein: mirror.py · world.py · features.py · model.py · action_mask.py · reward.py</p>
+</section>
+
+<!-- 3 Pseudocode -->
+<section class="slide">
+  <h2>Algorithmus als Pseudocode</h2>
+<pre class="pc"><span class="l" style="border-color:var(--c-io)"><b>pro Zug:</b></span><span class="l" style="border-color:var(--c-mirror)">  falls Spieler 1: obs ← spiegeln(obs)        <span class="cm"># Netz sieht sich immer als Spieler 0</span></span><span class="l" style="border-color:var(--c-world)">  welt.update(obs)                            <span class="cm"># Karte, Relics, Units merken (+ Spiegelfelder)</span></span><span class="l" style="border-color:var(--c-feat)">  x ← features(welt)                          <span class="cm"># 15 Karten 24×24 + 9 Zahlen</span></span><span class="l" style="border-color:var(--c-cnn)">  Q ← cnn(x)                                  <span class="cm"># 6 Karten: 5 Bewegungen + Sap</span></span><span class="l" style="border-color:var(--c-act)">  pro Unit: a ← beste erlaubte Aktion an ihrer Position, mit Wkt. ε zufällig</span><span class="l" style="border-color:var(--c-io)">  sende Aktionen (Spieler 1: zurückgedreht)</span><span class="l" style="border-color:var(--c-io)"><b>nach dem Zug (Training):</b></span><span class="l" style="border-color:var(--c-rew)">  r ← reward(welt)                            <span class="cm"># ein Wert pro Unit</span></span><span class="l" style="border-color:var(--c-train)">  buffer.speichere(x, a, r, x′)</span><span class="l" style="border-color:var(--c-train)">  alle 4 Züge:  batch ← 32 zufällige Züge aus buffer</span><span class="l" style="border-color:var(--c-train)">                y ← r + γ · Q_target(x′, argmax Q(x′))</span><span class="l" style="border-color:var(--c-train)">                netz ← Schritt gegen Huber(Q(x, a), y)</span><span class="l" style="border-color:var(--c-train)">  alle 1.000 Lernschritte:  Q_target ← Kopie von Q</span></pre>
+  <p class="small muted" style="margin-top:14px">
+    <b>ε (Epsilon)</b>: Anteil zufälliger Züge zum Ausprobieren, sinkt von 1,0 auf 0,1 ·
+    <b>Replay Buffer</b>: Speicher der letzten 10.000 Züge ·
+    <b>γ (Gamma)</b> = 0,98: wie stark die Zukunft zählt ·
+    <b>Q_target</b>: eingefrorene Kopie des Netzes
+  </p>
+</section>
+
+<!-- 4 Features -->
+<section class="slide">
+  <div class="here" data-hl="feat"><div class="lbl">Sie sind hier</div></div>
+  <h2><span class="tag" style="background:var(--c-feat)"></span>Feature Engineering</h2>
+  <p class="lead" style="max-width:900px"><b>Rein:</b> das Gedächtnis (World). <b>Passiert:</b> jede Information wird eine eigene 24×24-Ebene, wie die Farbkanäle eines Bildes. <b>Raus:</b> 15 Karten + 9 Zahlen.</p>
+  <div class="row" style="flex:1">
+    <div style="width:330px" id="layerStack"></div>
+    <div class="col">
+      <table class="small">
+        <tr><th>Karten-Feature</th><th>Ebenen</th><th>Warum</th></tr>
+        <tr><td><code>my_units</code></td><td class="n">2</td><td>Anzahl und Energie meiner Units pro Feld</td></tr>
+        <tr><td><code>opp_units</code></td><td class="n">2</td><td>dasselbe für gerade sichtbare Gegner</td></tr>
+        <tr><td><code>opp_memory</code></td><td class="n">1</td><td>wo Gegner zuletzt waren, verblasst</td></tr>
+        <tr><td><code>tile_type</code></td><td class="n">4</td><td>unbekannt / leer / Nebel / Asteroid, One-Hot</td></tr>
+        <tr><td><code>tile_energy</code></td><td class="n">1</td><td>Energie des Felds (−1..1)</td></tr>
+        <tr><td><code>vision</code></td><td class="n">2</td><td>jetzt sichtbar · wie frisch das Wissen ist</td></tr>
+        <tr><td><code>relics</code></td><td class="n">1</td><td>bekannte Relic-Positionen</td></tr>
+        <tr><td><code>point_tiles</code></td><td class="n">2</td><td>sicheres Punktfeld · ungeprüft nahe Relic</td></tr>
+      </table>
+      <p class="small" style="margin-top:12px"><b>9 globale Zahlen:</b> <code>time</code> (2: Match-/Spielfortschritt) · <code>score</code> (3: Punktedifferenz, Siege) · <code>rules</code> (4: Bewegungs-, Sap-Kosten, Sap-Reichweite, Sichtweite).</p>
+      <p class="tiny" style="margin-top:6px"><b>One-Hot</b> = jede Kategorie eine eigene Ebene statt einer Zahl 0/1/2. Alle Werte grob auf 0..1 bzw. −1..1 skaliert.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 5 Map-Memory + Mirror -->
+<section class="slide">
+  <div class="here" data-hl="mirror,world"><div class="lbl">Sie sind hier</div></div>
+  <h2><span class="tag" style="background:var(--c-world)"></span>Map-Memory und Mirror-Logik</h2>
+  <p class="lead" style="max-width:900px">Die Karte ist symmetrisch. <b>Was eine Unit sieht, kennt das Team doppelt</b> – und ein Netz reicht für beide Startecken.</p>
+  <div class="row" style="flex:1">
+    <div style="width:300px"><div id="mirrorGrid"></div>
+      <p class="tiny" style="margin-top:4px">Gesehen (voll) und daraus gespiegelt (hell). Spiegelachse gestrichelt.</p></div>
+    <div class="col">
+      <h3 style="color:var(--c-world)">Gedächtnis (world.py)</h3>
+      <ul class="clean small">
+        <li>Alle Units teilen <b>eine</b> Sicht: ein Feld gilt als gesehen, wenn irgendeine Unit es sieht.</li>
+        <li>Feld (x, y) gesehen ⇒ auch <b>(W−1−y, H−1−x)</b> bekannt: Feldtyp, Energie, Relics, Punktfelder.</li>
+        <li>Nichts wird gelöscht. Die <b>Frische</b> sinkt in 50 Zügen von 1 auf 0 – das Netz sieht, wie alt das Wissen ist.</li>
+        <li>Punktfelder <b>ableiten</b>: Punkte im Zug − sichere besetzte Punktfelder = 0 → alle unklaren besetzten Felder bringen nichts; = Anzahl unklare → alle bringen Punkte.</li>
+      </ul>
+    </div>
+    <div style="width:330px">
+      <h3 style="color:var(--c-mirror)">Spieler-Spiegel (mirror.py)</h3>
+      <div id="playerMirror"></div>
+      <ul class="clean small" style="margin-top:6px">
+        <li>Als Spieler 1: obs spiegeln, Teams tauschen.</li>
+        <li>Aktionen zurückdrehen: up↔right, down↔left, Sap (dx, dy) → (−dy, −dx).</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 6 CNN -->
+<section class="slide">
+  <div class="here" data-hl="cnn"><div class="lbl">Sie sind hier</div></div>
+  <h2><span class="tag" style="background:var(--c-cnn)"></span>Netzarchitektur (CNN)</h2>
+  <p class="lead" style="max-width:900px"><b>Rein:</b> 24 Ebenen (15 Karten + 9 Zahlen als konstante Ebenen). <b>Passiert:</b> 6 Faltungen mit wachsender Lücke. <b>Raus:</b> 6 Q-Karten, eine Zahl pro Aktion und Feld.</p>
+  <div id="cnnDiagram"></div>
+  <div class="row" style="margin-top:8px">
+    <div class="col">
+      <h3>Warum Lücken (Dilation)?</h3>
+      <p class="small">Ein 3×3-Filter mit Lücke d greift auf Felder im Abstand d zu. Mit 1, 2, 4, 8, 16, 1 sieht jedes Feld <b>65×65 Felder</b> – mehr als die ganze Karte (24×24), mit nur 6 Schichten.</p>
+    </div>
+    <div class="col">
+      <h3>Warum „Karte rein, Karte raus“?</h3>
+      <p class="small">Ein Netzaufruf für <b>alle</b> Units. Die Q-Werte einer Unit liest man direkt an ihrer Position ab. Die 6. Karte (Sap) gibt den Q-Wert für „Sap <b>auf dieses Feld</b>“.</p>
+    </div>
+    <div style="width:250px">
+      <h3>Größe</h3>
+      <p class="small">32 Kanäle pro Schicht, ReLU, ≈ 53.400 Gewichte.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 7 RL-Algorithmus + Aktionswahl -->
+<section class="slide">
+  <div class="here" data-hl="act"><div class="lbl">Sie sind hier</div></div>
+  <h2><span class="tag" style="background:var(--c-act)"></span>RL-Algorithmus und Aktionswahl</h2>
+  <p class="lead" style="max-width:900px"><b>Algorithmus:</b> Double DQN (Deep Q-Network). <b>Rein:</b> Q-Karten, Unit-Positionen, Energie. <b>Raus:</b> pro Unit <code>[typ, dx, dy]</code>.</p>
+  <div class="row" style="flex:1">
+    <div style="width:520px"><div id="actChart"></div>
+      <p class="tiny">Beispielwerte für eine Unit. Sap: bestes Feld im Quadrat ± Reichweite.</p></div>
+    <div class="col">
+      <ol class="small" style="padding-left:24px">
+        <li style="margin-bottom:8px"><b>Größter Q-Wert gewinnt</b> – Bewegung oder Sap.</li>
+        <li style="margin-bottom:8px"><b>Sap</b> nur mit genug Energie (<code>unit_sap_cost</code>), Ziel in Reichweite und auf der Karte. Sonst keine Strategie-Regeln: das Netz entscheidet ob und wohin.</li>
+        <li style="margin-bottom:8px"><b>Mehrere Units auf einem Feld</b> sehen dieselben Q-Werte. Die k-te nimmt die k-tbeste Aktion, sonst laufen sie als Klumpen.</li>
+        <li style="margin-bottom:8px"><b>ε-greedy:</b> mit Wahrscheinlichkeit ε eine Zufallsaktion. Sap zählt als eine von 6, dann Zufallsfeld in Reichweite.</li>
+        <li><b>Action Mask</b> <span class="def">(Liste verbotener Aktionen)</span>: für Bewegungen ist bewusst keine Regel aktiv. In V3 griff sie bei über 90 % der Entscheidungen ein.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- 8 Rewards -->
+<section class="slide">
+  <div class="here" data-hl="rew"><div class="lbl">Sie sind hier</div></div>
+  <h2><span class="tag" style="background:var(--c-rew)"></span>Rewards</h2>
+  <p class="lead" style="max-width:900px"><b>Rein:</b> die World nach dem Zug. <b>Passiert:</b> 9 Terme × Gewicht, aufsummiert. <b>Raus:</b> ein Reward pro Unit – das Netz lernt pro Unit.</p>
+  <div id="rewChart"></div>
+  <p class="small" style="margin-top:10px"><b>toward_point_tile</b> ist Potential-Shaping: ein Feld hin und wieder zurück ergibt 0 – nur Ankommen lohnt sich. <b>match_result</b> ist das eigentliche Ziel und deshalb am größten.</p>
+</section>
+
+<!-- 9 Training Kreislauf -->
+<section class="slide">
+  <div class="here" data-hl="rew,buf,train"><div class="lbl">Sie sind hier</div></div>
+  <h2><span class="tag" style="background:var(--c-train)"></span>Training: der Kreislauf</h2>
+  <p class="lead" style="max-width:900px">Spielen und Lernen laufen gleichzeitig. Jeder Zug wird gespeichert, <b>jeden 4. Zug</b> lernt das Netz aus 32 zufälligen alten Zügen.</p>
+  <div class="row" style="flex:1;align-items:center">
+    <div style="width:560px" id="cycle"></div>
+    <div class="col">
+      <h3>Drei Kniffe gegen instabiles Lernen</h3>
+      <ul class="clean small">
+        <li><b>Replay Buffer</b>: aufeinanderfolgende Züge ähneln sich stark. Zufällig gemischte alte Züge machen das Lernen ruhiger.</li>
+        <li><b>Target-Netz</b>: das Ziel y rechnet eine eingefrorene Kopie aus, die nur alle 1.000 Lernschritte nachgezogen wird. Sonst jagt das Netz sein eigenes, wanderndes Ziel.</li>
+        <li><b>Double DQN</b>: das aktuelle Netz <i>wählt</i> die beste nächste Aktion, das Target-Netz <i>bewertet</i> sie. Das bremst zu optimistische Q-Werte.</li>
+      </ul>
+      <p class="small muted">Ein Buffer-Eintrag = ein Zug mit allen Units. Gelernt wird für jede Unit, die gehandelt hat.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 10 Training Rechenbeispiel -->
+<section class="slide">
+  <div class="here" data-hl="train"><div class="lbl">Sie sind hier</div></div>
+  <h2><span class="tag" style="background:var(--c-train)"></span>Training: ein Lernschritt zum Mitrechnen</h2>
+  <div class="card" style="margin-bottom:14px;padding:12px 18px">
+    <p style="font-size:24px" class="mono">y = r + γ · (1 − ende) · Q<sub>target</sub>( s′, argmax<sub>a′</sub> Q(s′, a′) )</p>
+    <p class="small muted" style="margin-top:4px">
+      y = Ziel für Q(s, a) · r = Reward des Zugs · γ = 0,98 · ende = 1, wenn die Unit tot ist oder das Spiel vorbei
+      (dann ist y = r) · s′ = Zustand nach dem Zug · argmax = Aktion mit dem höchsten Wert
+    </p>
+  </div>
+  <p class="small muted" style="margin-bottom:8px">Rechenbeispiel mit ausgedachten Q-Werten: eine Unit steht neben einem sicheren Punktfeld und geht darauf.</p>
+  <div id="stepsEx"></div>
+  <p class="small" style="margin-top:10px"><b>Loss</b> <span class="def">(Fehlermaß, das minimiert wird)</span>: Huber – quadratisch bei kleinem Fehler, linear bei großem, damit Ausreißer nicht alles umwerfen. Optimizer Adam mit Lernrate 3·10⁻⁴.</p>
+</section>
+
+<!-- 11 Konfiguration und Gegner -->
+<section class="slide">
+  <h2><span class="tag" style="background:var(--c-train)"></span>Trainingskonfiguration und Gegner</h2>
+  <div class="row">
+    <div style="width:520px">
+      <table class="small">
+        <tr><th>Wert</th><th></th><th>Bedeutung</th></tr>
+        <tr><td>Spiele</td><td class="n">3.039</td><td>je 3 Matches à 100 Züge</td></tr>
+        <tr><td>Trainingszüge</td><td class="n">917.720</td><td>gespeicherte Züge</td></tr>
+        <tr><td>Lernschritte</td><td class="n">≈ 229.000</td><td>jeder 4. Zug</td></tr>
+        <tr><td>Batch · Buffer</td><td class="n">32 · 10.000</td><td>Züge pro Lernschritt · im Speicher</td></tr>
+        <tr><td>γ · Lernrate</td><td class="n">0,98 · 3·10⁻⁴</td><td>Blick ca. 50 Züge voraus · Adam</td></tr>
+        <tr><td>Target-Sync</td><td class="n">1.000</td><td>Lernschritte</td></tr>
+        <tr><td>ε</td><td class="n">1,0 → 0,1</td><td>in Stufen, siehe Entwicklung</td></tr>
+      </table>
+    </div>
+    <div class="col">
+      <h3>Gegner-Rotation</h3>
+      <p class="small">Alle 5 Spiele ein neuer Gegner aus 6. Grund (Erfahrung aus V4): gegen einen zu schwachen Gegner lernt der Agent nichts Neues, gegen einen zu starken kommt kaum ein Signal an.</p>
+      <p class="small muted" style="margin-top:6px">Trainiert wird nur als Spieler 0; der Gegner ist jeweils ein fremder Agent.</p>
+    </div>
+  </div>
+  <div style="margin-top:18px">
+    <div class="tiny" style="margin-bottom:4px">Gegner pro Spiel, Spiel 1 → 3.039</div>
+    <canvas id="oppStrip" width="1160" height="34" style="width:1160px;height:34px;display:block;border-radius:4px"></canvas>
+    <div id="oppLegend" style="display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:10px"></div>
+  </div>
+</section>
+
+<!-- 12 Entwicklung -->
+<section class="slide">
+  <h2>Entwicklung über 3.039 Spiele</h2>
+  <div class="kpis">
+    <div class="kpi"><div class="v">170 → 345</div><div class="l">Ø Punkte pro Spiel<br>erstes vs. letztes Zehntel</div></div>
+    <div class="kpi"><div class="v">63 % → 84 %</div><div class="l">Siege gegen Default + Hybrid<br>Spiel 1–1.000 vs. 2.001–3.039</div></div>
+    <div class="kpi"><div class="v">2,6 % → 4,1 %</div><div class="l">Siege gegen die 4 starken Gegner<br>gleiche Zeiträume</div></div>
+    <div class="kpi"><div class="v">0,79 → 3,30</div><div class="l">Ø Q-Wert<br>erstes vs. letztes Zehntel</div></div>
+  </div>
+  <div class="row" style="gap:16px">
+    <div class="col"><div id="chPts"></div><p class="tiny">Steigt bis ca. Spiel 500, danach Plateau.</p></div>
+    <div class="col"><div id="chWin"></div><p class="tiny">Schwache Gegner werden geschlagen, starke kaum.</p></div>
+    <div class="col"><div id="chQ"></div><p class="tiny">Q steigt und bleibt stabil, keine Explosion wie in V3.</p></div>
+  </div>
+  <p class="tiny" style="margin-top:2px">Alle Kurven: gleitender Mittelwert über 150 Spiele. Sieg = mehr gewonnene Matches als der Gegner.</p>
+</section>
+
+<!-- 13 Ausgewählte Spiele -->
+<section class="slide">
+  <h2>Ausgewählte Spiele</h2>
+  <p class="small muted" style="margin-bottom:12px">Im Ordner liegen keine Replays. Die Beispiele stammen aus den Kennzahlen der Logging-CSV.</p>
+  <div class="row">
+    <div class="col card" style="border-top:5px solid var(--c-rew)">
+      <h3>Spiel 2.813 vs. Solution_92 · Sieg 3:0</h3>
+      <p class="small"><b>661 Punkte</b> · 4 Relics · <b>14 Punktfelder</b> erkannt · 97 % der Karte bekannt</p>
+      <p class="small" style="margin-top:8px"><b>Warum gut:</b> viele sicher abgeleitete Punktfelder (World) → Units stehen darauf und kassieren <code>on_point_tile</code> und <code>points</code> (Reward). Gegen diesen Gegner insgesamt nur 3,5 % Siege.</p>
+    </div>
+    <div class="col card" style="border-top:5px solid var(--c-train)">
+      <h3>Spiel 2.742 vs. Hybrid_DQN_AFC · Niederlage 0:3</h3>
+      <p class="small"><b>0 Punkte</b> · <b>0 Relics</b> gefunden · trotzdem 91 % der Karte bekannt · Ø Q 4,03</p>
+      <p class="small" style="margin-top:8px"><b>Warum schlecht:</b> ohne Relic sind die Punktfeld-Ebenen leer und <code>toward_point_tile</code> liefert 0 – die Units haben kein Ziel. Gegen diesen Gegner zuletzt (Spiel 2.001–3.039) 88 % Siege.</p>
+      <p class="small hyp muted" style="margin-top:6px">Hypothese: Die Relics lagen im unbekannten Rest der Karte. Der hohe Q-Wert zeigt, dass das Netz die Lage falsch einschätzt.</p>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <p class="small"><b>Evaluation nach dem Training</b> (24 Spiele gegen Solution_92, ohne Lernen): 1 Sieg. Spiel 22 bringt <b>1.084 Punkte</b> und endet trotzdem 0:3 – entscheidend sind die Punkte <i>im Vergleich</i> zum Gegner, Match für Match.</p>
+  </div>
+</section>
+
+<!-- 14 Beobachtungen Hypothesen Erkenntnisse -->
+<section class="slide">
+  <h2>Beobachtungen, Hypothesen, Erkenntnisse</h2>
+  <div class="three" style="flex:1">
+    <div class="card"><h3><span class="pill" style="background:var(--ink)">Daten</span>Beobachtung</h3>
+      <ul class="clean">
+        <li>Gegen Default/Hybrid: 63 % → 84 % Siege.</li>
+        <li>Gegen Kaggle 3rd und 8th: 0 Siege in 945 Spielen.</li>
+        <li>Punkte steigen bis ca. Spiel 500, danach Plateau bei 300–380.</li>
+        <li>Ø Q stabil bei ca. 3, Loss steigt langsam von 0,07 auf 0,11.</li>
+      </ul></div>
+    <div class="card"><h3><span class="pill" style="background:var(--muted)">vermutet</span>Hypothese</h3>
+      <ul class="clean hyp">
+        <li>Starke Gegner gewinnen die Kämpfe um Punktfelder – auch mit Sap, den der trainierte Agent noch nicht hatte.</li>
+        <li>Das Plateau beginnt kurz nachdem ε auf 0,05 fällt: der Agent probiert kaum noch Neues.</li>
+        <li>Der Loss wächst, weil die Q-Werte größer werden und damit auch die Fehler.</li>
+      </ul></div>
+    <div class="card"><h3><span class="pill" style="background:var(--c-rew)">mitnehmen</span>Erkenntnis</h3>
+      <ul class="clean">
+        <li>Symmetrie nutzen: halbe Karte sehen, ganze kennen. Ein Netz für beide Seiten.</li>
+        <li>Karte rein, Karte raus: ein Netzaufruf für alle Units.</li>
+        <li>Wenige Reward-Terme, Shaping so, dass Hin-und-her nichts bringt.</li>
+        <li>Harte Regeln sparsam: zu viel Maske, und das Netz lernt nichts selbst.</li>
+        <li>Gegner rotieren statt einen festen Gegner.</li>
+      </ul></div>
+  </div>
+</section>
+
+<!-- 15 Next Steps + Fragen -->
+<section class="slide">
+  <h2>Next Steps</h2>
+  <ol style="padding-left:28px;max-width:1050px">
+    <li style="margin-bottom:10px"><b>Sap trainieren:</b> 6. Netzausgang und Reward <code>sap_result</code> sind gebaut und getestet, ein langer Trainingslauf fehlt noch.</li>
+    <li style="margin-bottom:10px"><b>Kills mitzählen:</b> ein getöteter Gegner ist danach unsichtbar und zählt bisher nicht als Treffer.</li>
+    <li style="margin-bottom:10px"><b>Echte Wege:</b> Abstand zum Punktfeld per Wegsuche statt Luftlinie, die ignoriert Asteroiden.</li>
+    <li><b>Mehr gegen starke Gegner:</b> Anteil der Kaggle-Gegner erhöhen, Evaluation auch als Spieler 1.</li>
+  </ol>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center">
+    <div style="font-size:84px;font-weight:700;letter-spacing:-.02em">Fragen?</div>
+  </div>
+</section>
+
+<!-- Backup B1 -->
+<section class="slide backup">
+  <div class="backup-badge">Backup</div>
+  <h2>Alle Hyperparameter</h2>
+  <div class="row">
+    <div class="col"><table class="small">
+      <tr><th>Name im Code</th><th>Wert</th></tr>
+      <tr><td><code>HIDDEN</code></td><td class="n">32</td></tr>
+      <tr><td><code>DILATIONS</code></td><td class="n">1, 2, 4, 8, 16, 1</td></tr>
+      <tr><td><code>GAMMA</code></td><td class="n">0,98</td></tr>
+      <tr><td><code>LEARNING_RATE</code></td><td class="n">3·10⁻⁴ (Adam)</td></tr>
+      <tr><td><code>BATCH_SIZE</code></td><td class="n">32 Züge</td></tr>
+      <tr><td><code>BUFFER_SIZE</code></td><td class="n">10.000 Züge</td></tr>
+      <tr><td><code>TRAIN_EVERY</code></td><td class="n">4</td></tr>
+      <tr><td><code>TARGET_SYNC</code></td><td class="n">1.000 Lernschritte</td></tr>
+    </table></div>
+    <div class="col"><table class="small">
+      <tr><th>Name im Code</th><th>Wert</th></tr>
+      <tr><td><code>EPS_START</code> / <code>EPS_END</code></td><td class="n">1,0 / 0,1</td></tr>
+      <tr><td><code>EPS_STEPS</code></td><td class="n">500.000 Züge</td></tr>
+      <tr><td><code>EPS_EVERY</code></td><td class="n">10.000 (Treppe)</td></tr>
+      <tr><td>Loss</td><td class="n">Huber (smooth L1)</td></tr>
+      <tr><td>Gradient-Clipping</td><td class="n">Norm 10</td></tr>
+      <tr><td>Buffer-Speicher</td><td class="n">float16 / int8</td></tr>
+      <tr><td><code>MEMORY_STEPS</code></td><td class="n">50 Züge</td></tr>
+    </table></div>
+  </div>
+  <p class="small muted" style="margin-top:14px">Laut CSV lief ε im Training anders als im aktuellen Code: bis Spiel 332 schneller auf 0,05, ab Spiel 1.520 dann 0,1. Gespeichert werden nur Netz und Zugzähler, nicht Buffer und Optimizer.</p>
+</section>
+
+<!-- Backup B2 -->
+<section class="slide backup">
+  <div class="backup-badge">Backup</div>
+  <h2>Feature-Liste mit Skalierung</h2>
+  <table class="small">
+    <tr><th>Ebene</th><th>Feature</th><th>Inhalt und Skalierung</th></tr>
+    <tr><td class="n">0–1</td><td><code>my_units</code></td><td>Anzahl · Energie / 400</td></tr>
+    <tr><td class="n">2–3</td><td><code>opp_units</code></td><td>sichtbare Gegner: Anzahl · Energie / 400</td></tr>
+    <tr><td class="n">4</td><td><code>opp_memory</code></td><td>1 − Alter / 50, am zuletzt gesehenen Ort (pro Match zurückgesetzt)</td></tr>
+    <tr><td class="n">5–8</td><td><code>tile_type</code></td><td>One-Hot: unbekannt, leer, Nebel, Asteroid</td></tr>
+    <tr><td class="n">9</td><td><code>tile_energy</code></td><td>Feldenergie / 20, begrenzt auf −1..1</td></tr>
+    <tr><td class="n">10–11</td><td><code>vision</code></td><td>jetzt sichtbar · Frische 1 − Alter / 50 (0 = nie gesehen)</td></tr>
+    <tr><td class="n">12</td><td><code>relics</code></td><td>1 an bekannter Relic (inkl. Spiegel-Relic)</td></tr>
+    <tr><td class="n">13–14</td><td><code>point_tiles</code></td><td>sicheres Punktfeld · ungeprüft im 5×5 um eine Relic</td></tr>
+    <tr><td class="n">G</td><td><code>time</code></td><td>Zug im Match / 100 · Match-Nr. / 3</td></tr>
+    <tr><td class="n">G</td><td><code>score</code></td><td>tanh(Punktedifferenz / 20) · meine Siege / 3 · Gegner-Siege / 3</td></tr>
+    <tr><td class="n">G</td><td><code>rules</code></td><td>Bewegungskosten / 5 · Sap-Kosten / 50 · Sap-Reichweite / 7 · Sichtweite / 4</td></tr>
+  </table>
+</section>
+
+<!-- Backup B3 -->
+<section class="slide backup">
+  <div class="backup-badge">Backup</div>
+  <h2>Reward-Terme im Detail</h2>
+  <table class="small">
+    <tr><th>Term</th><th>Gewicht</th><th>Wert vor Gewicht</th></tr>
+    <tr><td><code>on_point_tile</code></td><td class="n">0,5</td><td>1 auf sicherem Punktfeld, geteilt durch eigene Units auf dem Feld</td></tr>
+    <tr><td><code>stacked</code></td><td class="n">−0,5</td><td>1, wenn sich die Unit ihr Feld mit eigenen Units teilt</td></tr>
+    <tr><td><code>energy_tile</code></td><td class="n">0,1</td><td>positive Feldenergie / 20 (0..1), geteilt durch Units auf dem Feld</td></tr>
+    <tr><td><code>toward_point_tile</code></td><td class="n">0,2</td><td>Felder näher (+) / weiter (−) zum nächsten freien Punkt- oder Kandidatenfeld</td></tr>
+    <tr><td><code>sap_result</code></td><td class="n">0,2</td><td>Treffer − 1: Gegner auf Zielfeld = 1, auf Nachbarfeld = 0,5</td></tr>
+    <tr><td><code>points</code></td><td class="n">0,05</td><td>Team-Punkte im letzten Zug</td></tr>
+    <tr><td><code>match_result</code></td><td class="n">5,0</td><td>+1 / −1 im Zug nach Matchende</td></tr>
+    <tr><td><code>new_tiles</code></td><td class="n">0,01</td><td>erstmals gesehene Felder (inkl. Spiegel)</td></tr>
+    <tr><td><code>new_relics</code></td><td class="n">0,5</td><td>neu entdeckte Relics</td></tr>
+  </table>
+  <p class="small muted" style="margin-top:10px">Team-Terme bekommt jede Unit gleich. Regel im Code: <code>energy_tile</code>-Gewicht muss kleiner bleiben als <code>on_point_tile</code>.</p>
+</section>
+
+<!-- Backup B4 -->
+<section class="slide backup">
+  <div class="backup-badge">Backup</div>
+  <h2>Was die CSV-Spalten bedeuten</h2>
+  <table class="small">
+    <tr><th>Spalte</th><th>Bedeutung (logger.py)</th></tr>
+    <tr><td><code>siege</code> / <code>niederlagen</code></td><td>gewonnene / verlorene Matches im Spiel (0–3)</td></tr>
+    <tr><td><code>punkte</code></td><td>Summe der eigenen Punkte über alle Matches</td></tr>
+    <tr><td><code>relics</code> · <code>punktefelder</code></td><td>bekannte Relics · sichere Punktfelder am Spielende (inkl. Spiegel)</td></tr>
+    <tr><td><code>karte_bekannt</code></td><td>Anteil der Felder, die je gesehen wurden</td></tr>
+    <tr><td><code>aktion_*</code></td><td>Anteil der Entscheidungen pro Aktionstyp</td></tr>
+    <tr><td><code>reward_*</code></td><td>Ø Reward pro Entscheidung je Term, mit Gewicht</td></tr>
+    <tr><td><code>q</code> · <code>loss</code></td><td>Ø Q(s, a) und Ø Huber-Loss über die Lernschritte dieses Spiels</td></tr>
+    <tr><td><code>trainingszuege</code></td><td>gespeicherte Züge insgesamt (überlebt Neustarts)</td></tr>
+    <tr><td><code>lernschritte</code></td><td>Lernschritte seit Programmstart (beginnt nach Neustart bei 0)</td></tr>
+    <tr><td><code>epsilon</code></td><td>ε am Spielende</td></tr>
+  </table>
+</section>
+
+</div>
+<div id="bar"></div>
+<div id="nav"><button id="prev" aria-label="zurück">‹</button><span id="num"></span><button id="next" aria-label="weiter">›</button></div>
+<script>
+const S = {"x":[150,175,200,225,250,275,300,325,350,375,400,425,450,475,500,525,550,575,600,625,650,675,700,725,750,775,800,825,850,875,900,925,950,975,1000,1025,1050,1075,1100,1125,1150,1175,1200,1225,1250,1275,1300,1325,1350,1375,1400,1425,1450,1475,1500,1525,1550,1575,1600,1625,1650,1675,1700,1725,1750,1775,1800,1825,1850,1875,1900,1925,1950,1975,2000,2025,2050,2075,2100,2125,2150,2175,2200,2225,2250,2275,2300,2325,2350,2375,2400,2425,2450,2475,2500,2525,2550,2575,2600,2625,2650,2675,2700,2725,2750,2775,2800,2825,2850,2875,2900,2925,2950,2975,3000,3025,3039],"punkte":[100.7,120.3,145.5,149.4,185.1,214.5,236.7,236.4,256.7,280.2,284.2,301.6,300.5,332.1,321.4,339.1,336.6,321.6,305.3,303.3,316.9,307.1,312.8,307.5,317.1,298.2,277.7,271.4,252.6,275.7,257.7,253.8,278.3,285.3,293.6,257.1,294.0,311.1,296.5,289.6,280.4,330.8,312.3,313.2,325.6,343.2,351.5,325.7,320.4,321.4,296.6,287.3,301.1,301.0,298.1,286.7,312.5,322.1,316.7,324.5,348.0,353.6,344.2,341.7,341.8,358.7,352.2,359.8,375.6,358.0,347.7,331.9,328.7,340.8,328.2,332.0,328.9,331.1,328.9,308.9,315.1,338.1,366.0,355.8,346.5,358.0,342.6,333.8,322.0,333.4,351.3,351.2,365.5,386.6,385.3,363.2,353.2,349.9,354.4,345.0,358.7,365.9,364.9,356.4,377.3,355.6,337.8,345.8,351.8,367.9,346.7,351.1,334.6,327.5,324.2,331.7,326.4],"q":[0.173,0.343,0.58,0.769,0.967,1.173,1.375,1.516,1.629,1.832,1.949,2.162,2.275,2.404,2.471,2.393,2.472,2.369,2.367,2.362,2.446,2.569,2.615,2.765,2.829,2.865,2.775,2.681,2.595,2.537,2.562,2.464,2.48,2.715,2.888,2.836,2.79,2.921,3.008,2.894,2.764,2.832,2.97,2.919,2.924,2.947,2.99,2.932,2.753,2.774,2.748,2.618,2.515,2.502,2.45,2.341,2.246,2.373,2.395,2.459,2.592,2.664,2.69,2.558,2.658,2.739,2.879,2.968,3.089,3.152,2.992,2.854,2.695,2.644,2.592,2.706,2.802,2.79,2.849,2.842,2.741,2.812,3.031,3.178,3.08,2.993,3.134,2.958,2.78,2.688,2.661,2.754,2.795,2.997,3.112,3.029,3.022,3.123,3.207,3.324,3.383,3.625,3.723,3.605,3.578,3.515,3.381,3.381,3.418,3.443,3.346,3.241,3.246,3.095,2.997,3.121,3.171],"eps":[0.573,0.525,0.43,0.383,0.287,0.24,0.145,0.098,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1],"win_weak":[22.2,24.4,28.9,33.3,40.0,57.1,68.6,73.3,67.5,70.0,80.0,75.6,73.3,74.0,80.0,80.0,68.6,68.0,66.7,66.7,70.0,71.4,77.5,77.8,80.0,80.0,80.0,75.0,86.7,80.0,80.0,80.0,73.1,74.3,70.0,70.0,70.0,73.3,80.0,85.0,85.0,80.0,80.0,80.0,82.8,80.0,80.0,86.7,80.0,84.0,72.0,70.0,71.4,76.0,81.2,66.7,83.3,86.4,85.2,87.5,87.1,96.6,95.8,88.0,86.2,80.6,82.2,82.6,80.0,82.0,82.5,83.3,76.9,67.6,66.7,72.2,65.9,69.4,67.3,67.5,72.5,73.3,85.2,86.7,92.5,97.6,95.0,97.1,92.0,90.0,90.5,88.0,77.4,80.0,80.0,80.6,81.8,79.5,86.4,85.7,88.9,85.2,84.4,86.1,88.9,87.5,82.9,85.0,85.0,81.8,80.0,82.5,80.0,80.0,83.3,88.6,88.6],"win_strong":[1.0,1.0,1.9,1.0,1.0,0.9,0.9,1.7,0.9,0.9,0.9,1.0,1.9,3.0,2.6,2.7,3.5,4.8,4.2,2.5,2.7,2.6,1.8,1.0,2.6,3.5,3.2,3.8,4.4,4.6,3.8,3.7,4.0,5.2,4.2,3.1,2.3,1.7,3.1,2.3,3.1,4.2,4.3,5.6,5.0,4.0,4.8,3.7,3.8,4.8,4.0,3.8,3.1,4.8,4.5,2.3,3.0,3.1,3.3,1.7,1.7,2.5,2.4,4.0,3.3,3.5,4.8,5.8,5.3,3.0,2.7,3.3,2.4,1.7,1.7,3.5,4.6,4.0,4.0,2.7,6.4,4.8,6.2,7.6,7.3,8.3,5.5,5.2,4.0,4.6,6.2,5.6,5.0,5.5,4.3,3.5,2.8,2.8,2.8,3.5,3.8,2.1,1.9,1.8,1.9,1.8,1.8,2.7,2.7,3.8,4.2,3.6,4.2,4.0,4.2,3.5,3.5]};
+const OPP = "888883333333333SSSSSHHHHH888888888888888HHHHH99999SSSSS88888HHHHH9999999999SSSSSHHHHHSSSSSHHHHH99999HHHHH88888HHHHHDDDDD333339999988888HHHHH888888888833333HHHHH999993333399999DDDDD8888899999SSSSSSSSSS99999999999999933333DDDDDHHHHHDDDDDSSSSS9999933333999999999988888DDDDD9999988888SSSSS3333388888HHHHH3333333333333339999999999HHHHHDDDDDHHHHHSSSSSSSSSS88888SSSSS9999999999HHHHHHHHHH999999999999999HHHHHHHHHHDDDDD8888899999SSSSSSSSSS999999999988888HHHHH3333388888SSSSSHHHHH333333333399999999993333388888SSSSS9999999999HHHHHDDDDD88888SSSSSDDDDDSSSSS9999999999SSSSSSSSSS3333399999HHHHHSSSSS33333HHHHHSSSSS8888833333HHHHH8888899999HHHHH9999988888HHHHH333333333399999SSSSSSSSSSHHHHH9999988888HHHHH99999DDDDD9999988888HHHHH9999933333SSSSSSSSSS3333388888SSSSSSSSSHHHHH99999SSSSS88888SSSSS33333333338888833333333338888833333999999999999999SSSSS88888HHHHH99999999999999933333HHHHHDDDDDSSSSSSSSSS9999988888SSSSS99999SSSSS88888SSSSS33333SSSSS88888HHHHH88888HHHHHDDDDDSSSSS88888HHHHH99999SSSSS333333333388888SSSSSSSSSSSSSSSSSSSSSSSSS333339999933333888889999988888SSSSS88888HHHHHHHHHH33333SSSSSSSSSSSSSSS9999933333HHHHHSSSSSSSSSSHHHHH88888SSSSS99999SSSSSSSSSS88888SSSSS99999HHHHH88888DDDDD33333HHHHH3333399999SSSSS8888888888SSSSSSSSSS33333SSSSSDDDDD8888888888SSSSS8888833333HHHHH999998888899999SSSSS9999988888SSSSS99999SSSSS33333333339999999999DDDDDSSSSSHHHHH888888888888888HHHHHSSSSS88888SSSSS33333SSSSSHHHHHSSSSS33333999993333399999888889999999999SSSSS8888833333HHHHH99999888889999999999999998888888888SSSSS33333DDDD99SS99DD88SS88HHSS88993333DD99HH99SSSSSSS99999HHHHH8888833333888889999933333SSSSS9999933333HHHHHHHHHH9999933333HHHHHSSSSS9999999999SSSSSSSSSS33333SSSSSSSSSS33333HHHHH999993333399999999999999999999SSSSS88888SSSSSSSSSSDDDDD88888HHHHHSSSSSSSSSSHHHHH9999988888HHHHHDDDDDHHHHHDDDDD88888DDDDDSSSSSSSSSSSSSSSSSSSS8888833333HHHHHHHHHH99999HHHHH9999988888999998888899999SSSSS3333399999SSSSS9999999999888883333333333HHHHH99999SSSSSHHHHH99999SSSSS88888SSSSSHHHHH99999DDDDD99999DDDDD888889999988888HHHHH33333SSSSSSSSSS33333HHHHHSSSSSHHHHHSSSSS888889999933333HHHHH8888899999DDDDDDDDDDSSSSSSSSSS33333DDDDD9999933333DDDDDSSSSS88888333339999999999SSSSS99999DDDDD88888DDDDDDDDDD9999988888HHHHHHHHHH99999HHHHHSSSSSSSSSSSSSSSSSSSSSSSSSDDDDD8888899999SSSSS3333333333SSSSS999998888833333DDDDDDDDDDSSSSS88888SSSSSSSSSS99999SSSSS3333399999HHHHHSSSSS88888HHHHH99999SSSSSSSSSSSSSSS888883333333333SSSSSSSSSSSSSSS9999988888DDDDD8888899999HHHHH99999DDDDDDDDDD333339999933333HHHHHHHHHH99999HHHHH88888999999999988888SSSSS888889999933333999998888899999HHHHH3333388888SSSSSHHHHH9999988888SSSSSHHHHHHHHHH99999SSSSS88888DDDDDDDDDDSSSSSHHHHH9999999999SSSSS9999933333DDDDDDDDDD99999SSSSSDDDDDDDDDDSSSSS88888SSSSS999998888899999SSSSS888883333333333SSSSS88888DDDDD33333HHHHHHHHHHHHHHHSSSSS9999933333999999999933333HHHHH9999933333DDDDDHHHHHSSSSS99999HHHHH99999SSSSS999993333333333SSSSSSSSSS9999999999DDDDD99999333338888899999HHHHH99999SSSSSDDDDD33333HHHHH9999933333SSSSS3333388888SSSSSHHHHHSSSSS33333333339999933333SSSSSSSSSS99999HHHHH99999DDDDDHHHHH8888899999333339999988888";
+const NS = 'http://www.w3.org/2000/svg';
+const col = n => `var(--c-${n})`;
+
+/* ---------- Gesamtdiagramm ---------- */
+const NODES = {
+  obs:   {x:10,  y:70,  w:120, t:'Spiel',        s:'obs',              c:'io'},
+  mirror:{x:175, y:70,  w:140, t:'Spiegel',      s:'nur Spieler 1',    c:'mirror'},
+  world: {x:360, y:70,  w:140, t:'World',        s:'Gedächtnis',       c:'world'},
+  feat:  {x:545, y:70,  w:140, t:'Features',     s:'15×24×24 + 9',     c:'feat'},
+  cnn:   {x:730, y:70,  w:140, t:'CNN',          s:'6 Faltungen',      c:'cnn'},
+  act:   {x:915, y:70,  w:140, t:'Aktionswahl',  s:'Maske · ε · Sap',  c:'act'},
+  out:   {x:1090,y:70,  w:100, t:'Aktionen',     s:'pro Unit',         c:'io'},
+  rew:   {x:360, y:290, w:140, t:'Reward',       s:'1 Wert pro Unit',  c:'rew'},
+  buf:   {x:600, y:290, w:140, t:'Replay Buffer',s:'10.000 Züge',      c:'train'},
+  train: {x:840, y:290, w:140, t:'Lernschritt',  s:'Double DQN',       c:'train'},
+};
+const BH = 76;
+const EDGES = [
+  ['M130,108 H171', 'obs', 152, 'obs'],
+  ['M315,108 H356', 'als Sp. 0', 337, 'mirror'],
+  ['M500,108 H541', '', 520, 'world'],
+  ['M685,108 H726', 'x', 705, 'feat'],
+  ['M870,108 H911', 'Q-Karten', 892, 'cnn'],
+  ['M1055,108 H1086','', 1072, 'act'],
+  ['M1140,146 V395 H430 V370', 'next_obs → World.update', 790, 'out', 414],
+  ['M500,328 H596', '(x, a, r, x′)', 548, 'rew'],
+  ['M740,328 H836', '32 Züge', 788, 'buf'],
+  ['M910,290 V232 H800 V150', 'neue Gewichte', 858, 'train', 224],
+];
+function pipeline(el, hl, mini){
+  const on = id => !hl || hl.includes(id);
+  const uid = 'a' + Math.random().toString(36).slice(2,7);
+  let s = `<svg viewBox="0 0 1200 425" width="100%" xmlns="${NS}" role="img" aria-label="Gesamtdiagramm">
+  <defs><marker id="${uid}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/></marker></defs>
+  <rect x="340" y="262" width="660" height="125" rx="14" fill="none" stroke="#c9ced5" stroke-dasharray="6 6"/>
+  <text x="352" y="281" font-size="14" fill="#6b7280">nur im Training</text>`;
+  for (const [d, lab, lx, from, ly] of EDGES){
+    const vis = !hl || on(from);
+    s += `<path d="${d}" fill="none" stroke="#6b7280" stroke-width="2.2" marker-end="url(#${uid})" opacity="${vis?1:.25}"/>`;
+    if (lab && !mini) s += `<text x="${lx}" y="${ly||58}" font-size="14" text-anchor="middle" fill="#4b5563">${lab}</text>`;
+  }
+  for (const [id, n] of Object.entries(NODES)){
+    const o = on(id) ? 1 : .22;
+    s += `<g opacity="${o}"><rect x="${n.x}" y="${n.y}" width="${n.w}" height="${BH}" rx="10" style="fill:${col(n.c)}"/>
+      <text x="${n.x+n.w/2}" y="${n.y+34}" font-size="${mini?24:19}" font-weight="650" fill="#fff" text-anchor="middle">${n.t}</text>`;
+    if (!mini) s += `<text x="${n.x+n.w/2}" y="${n.y+58}" font-size="14.5" fill="#fff" opacity=".92" text-anchor="middle">${n.s}</text>`;
+    s += `</g>`;
+  }
+  if (!mini){
+    s += `<text x="1140" y="176" font-size="13" fill="#4b5563" text-anchor="middle">[typ, dx, dy]</text>
+          <text x="800" y="186" font-size="13" fill="#4b5563" text-anchor="middle">6×24×24</text>`;
+  }
+  el.insertAdjacentHTML('beforeend', s + '</svg>');
+}
+pipeline(document.getElementById('bigPipe'), null, false);
+pipeline(document.getElementById('titlePipe'), null, true);
+document.querySelectorAll('.here').forEach(h => pipeline(h, h.dataset.hl.split(','), true));
+
+/* ---------- Feature-Stapel ---------- */
+(function(){
+  const groups = [['my_units',2],['opp_units',2],['opp_memory',1],['tile_type',4],['tile_energy',1],['vision',2],['relics',1],['point_tiles',2]];
+  let s = `<svg viewBox="0 0 330 430" width="330" xmlns="${NS}">`;
+  let i = 0, y0 = 20;
+  const shades = ['#1e40af','#2563eb','#3b82f6','#60a5fa'];
+  groups.forEach(([name, n], gi) => {
+    const top = y0 + i*22;
+    for (let k = 0; k < n; k++, i++){
+      const y = y0 + i*22;
+      s += `<path d="M20,${y+18} L120,${y} L220,${y} L120,${y+18} z" fill="${shades[gi%4]}" opacity=".9" stroke="#fff"/>`;
+    }
+    s += `<text x="232" y="${top + (n*22)/2 + 6}" font-size="14" fill="#374151">${name}</text>`;
+  });
+  s += `<text x="20" y="${y0+i*22+34}" font-size="14" fill="#6b7280">15 Ebenen à 24×24</text>`;
+  const gy = y0 + i*22 + 52;
+  for (let k = 0; k < 9; k++) s += `<rect x="${20+k*22}" y="${gy}" width="18" height="18" rx="3" fill="#93c5fd"/>`;
+  s += `<text x="222" y="${gy+14}" font-size="14" fill="#6b7280">+ 9 Zahlen</text></svg>`;
+  document.getElementById('layerStack').innerHTML = s;
+})();
+
+/* ---------- Spiegel-Karte ---------- */
+(function(){
+  const N = 24, c = 11.5, o = 4;
+  let s = `<svg viewBox="0 0 ${N*c+2*o} ${N*c+2*o}" width="292" xmlns="${NS}">`;
+  const unit = [3,4], R = 4;
+  const seen = (x,y) => Math.max(Math.abs(x-unit[0]), Math.abs(y-unit[1])) <= R;
+  const mir = (x,y) => [N-1-y, N-1-x];
+  for (let x = 0; x < N; x++) for (let y = 0; y < N; y++){
+    let f = '#f1f3f5';
+    if (seen(x,y)) f = 'var(--c-world)';
+    else { const [mx,my] = mir(x,y); if (seen(mx,my)) f = '#9fd8d1'; }
+    s += `<rect x="${o+x*c}" y="${o+y*c}" width="${c-1}" height="${c-1}" fill="${f}"/>`;
+  }
+  s += `<line x1="${o+N*c}" y1="${o}" x2="${o}" y2="${o+N*c}" stroke="#374151" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+  const dot = (x,y,fill,r) => `<circle cx="${o+x*c+c/2-.5}" cy="${o+y*c+c/2-.5}" r="${r}" fill="${fill}"/>`;
+  s += dot(unit[0],unit[1],'#fff',4);
+  const rel = [6,2], mrel = mir(...rel);
+  s += `<path d="M${o+rel[0]*c+1},${o+rel[1]*c+c-2} l${(c-3)/2},-${c-3} l${(c-3)/2},${c-3} z" fill="#f59e0b"/>`;
+  s += `<path d="M${o+mrel[0]*c+1},${o+mrel[1]*c+c-2} l${(c-3)/2},-${c-3} l${(c-3)/2},${c-3} z" fill="#f59e0b" opacity=".6"/>`;
+  s += `</svg><div class="tiny" style="margin-top:2px">● Unit · ▲ Relic und Spiegel-Relic</div>`;
+  document.getElementById('mirrorGrid').innerHTML = s;
+})();
+
+/* ---------- Spieler-Spiegel ---------- */
+(function(){
+  const b = (ox, start, label, arrows) => {
+    let s = `<g transform="translate(${ox},0)"><rect x="0" y="22" width="130" height="130" rx="6" fill="#f1f3f5" stroke="#d1d5db"/>
+      <line x1="130" y1="22" x2="0" y2="152" stroke="#9ca3af" stroke-dasharray="4 3"/>
+      <circle cx="${start[0]}" cy="${start[1]}" r="9" fill="var(--c-mirror)"/>
+      <text x="65" y="14" font-size="13" text-anchor="middle" fill="#374151">${label}</text>`;
+    return s + arrows + '</g>';
+  };
+  let s = `<svg viewBox="0 0 330 160" width="330" xmlns="${NS}">
+    <defs><marker id="pm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="#374151"/></marker></defs>`;
+  s += b(0, [118,140], 'echt: Start unten rechts',
+     `<path d="M118,140 v-30" stroke="#374151" stroke-width="2" marker-end="url(#pm)"/><text x="104" y="104" font-size="12" text-anchor="end">up</text>`);
+  s += `<path d="M140,87 h46" stroke="#6b7280" stroke-width="2" marker-end="url(#pm)"/><text x="163" y="80" font-size="12" text-anchor="middle" fill="#6b7280">spiegeln</text>`;
+  s += b(196, [12,34], 'Netz sieht: Start oben links',
+     `<path d="M12,34 h30" stroke="#374151" stroke-width="2" marker-end="url(#pm)"/><text x="46" y="38" font-size="12">right</text>`);
+  document.getElementById('playerMirror').innerHTML = s + '</svg>';
+})();
+
+/* ---------- CNN ---------- */
+(function(){
+  const L = [['Eingang','24 × 24×24','#a5b4fc',90]];
+  [1,2,4,8,16,1].forEach(d => L.push([`Conv 3×3`,`Dilation ${d}`,'var(--c-cnn)',150]));
+  L.push(['Conv 1×1','→ 6 Karten','#5b21b6',110]);
+  L.push(['Ausgang','6 × 24×24','#c4b5fd',90]);
+  const w = 118, gap = 18;
+  let s = `<svg viewBox="0 0 ${L.length*(w+gap)} 190" width="100%" xmlns="${NS}">
+    <defs><marker id="cm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="#6b7280"/></marker></defs>`;
+  L.forEach(([a,b,c,h], i) => {
+    const x = i*(w+gap), y = 95 - h/2;
+    s += `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" style="fill:${c}"/>
+      <text x="${x+w/2}" y="92" font-size="15" font-weight="650" fill="#fff" text-anchor="middle">${a}</text>
+      <text x="${x+w/2}" y="112" font-size="13.5" fill="#fff" text-anchor="middle">${b}</text>`;
+    if (i>0 && i<7) s += `<text x="${x+w/2}" y="${y+h+18}" font-size="12.5" fill="#6b7280" text-anchor="middle">32 Kanäle · ReLU</text>`;
+    if (i < L.length-1) s += `<path d="M${x+w+2},95 h${gap-4}" stroke="#6b7280" stroke-width="2" marker-end="url(#cm)"/>`;
+  });
+  s += `<text x="${(w+gap)*8 + w/2}" y="${95+45+18}" font-size="12.5" fill="#6b7280" text-anchor="middle">5 Bewegungen + Sap</text>`;
+  document.getElementById('cnnDiagram').innerHTML = s + '</svg>';
+})();
+
+/* ---------- Aktionswahl ---------- */
+(function(){
+  const q = [['stay',0.9],['up',1.1],['right',1.7],['down',1.0],['left',0.4],['Sap*',1.3]];
+  const best = 2, W = 300, bh = 30;
+  let s = `<svg viewBox="0 0 520 260" width="520" xmlns="${NS}">`;
+  q.forEach(([n,v],i) => {
+    const y = 18 + i*(bh+10), len = v/1.9*W;
+    s += `<text x="58" y="${y+21}" font-size="16" text-anchor="end" fill="#374151">${n}</text>
+      <rect x="66" y="${y}" width="${len}" height="${bh}" rx="5" style="fill:${i===best?'var(--c-act)':'#e5d3b8'}"/>
+      <text x="${72+len}" y="${y+21}" font-size="15" fill="#374151">${v.toFixed(1).replace('.',',')}${i===best?'  ← gewählt':''}</text>`;
+  });
+  // Sap-Bereich
+  const ox = 400, oy = 40, c = 15, R = 3;
+  s += `<text x="${ox+52}" y="${oy-12}" font-size="13" text-anchor="middle" fill="#6b7280">*Sap-Karte, ±${R}</text>`;
+  for (let dx=-R; dx<=R; dx++) for (let dy=-R; dy<=R; dy++){
+    let f = '#f6ead8';
+    if (dx===2 && dy===-1) f = 'var(--c-act)';
+    s += `<rect x="${ox+(dx+R)*c}" y="${oy+(dy+R)*c}" width="${c-1}" height="${c-1}" style="fill:${f}"/>`;
+  }
+  s += `<circle cx="${ox+R*c+c/2-.5}" cy="${oy+R*c+c/2-.5}" r="5" fill="#374151"/>
+        <text x="${ox+52}" y="${oy+7*c+18}" font-size="12.5" text-anchor="middle" fill="#6b7280">bestes Zielfeld = 1,3</text>`;
+  document.getElementById('actChart').innerHTML = s + '</svg>';
+})();
+
+/* ---------- Rewards ---------- */
+(function(){
+  const t = [
+    ['Unit','on_point_tile',0.5,'auf sicherem Punktfeld stehen'],
+    ['Unit','stacked',-0.5,'Feld mit eigener Unit teilen'],
+    ['Unit','toward_point_tile',0.2,'pro Feld näher (−0,2 pro Feld weiter)'],
+    ['Unit','sap_result',0.2,'× (Treffer − 1): Fehlschuss = −0,2'],
+    ['Unit','energy_tile',0.1,'bis 0,1 auf Feld mit Energie'],
+    ['Team','match_result',5.0,'Match gewonnen (−5 verloren)'],
+    ['Team','new_relics',0.5,'pro neu entdeckter Relic'],
+    ['Team','points',0.05,'pro Team-Punkt im Zug'],
+    ['Team','new_tiles',0.01,'pro neu gesehenem Feld'],
+  ];
+  const mid = 520, sc = 300, rh = 38;
+  let s = `<svg viewBox="0 0 1160 ${t.length*rh+30}" width="100%" xmlns="${NS}">
+    <line x1="${mid}" y1="4" x2="${mid}" y2="${t.length*rh+6}" stroke="#9ca3af"/>`;
+  t.forEach(([g,n,w,txt],i) => {
+    const y = 8 + i*rh, cap = Math.min(Math.abs(w),0.6), len = cap*sc, neg = w<0;
+    if (i===0 || t[i-1][0]!==g) s += `<text x="0" y="${y+21}" font-size="14" font-weight="650" fill="#6b7280">${g==='Unit'?'pro Unit':'für alle Units'}</text>`;
+    s += `<text x="${mid-14-(neg?len:0)}" y="${y+21}" font-size="16.5" text-anchor="end" class="mono" fill="#111827">${n}</text>
+      <rect x="${neg?mid-len:mid}" y="${y+3}" width="${len}" height="${rh-12}" rx="4" style="fill:${neg?'var(--c-train)':'var(--c-rew)'}"/>`;
+    if (Math.abs(w)>0.6) s += `<path d="M${mid+len-34},${y+1} l8,${rh-8} M${mid+len-24},${y+1} l8,${rh-8}" stroke="#fff" stroke-width="4"/>`;
+    s += `<text x="${(neg?mid:mid+len)+12}" y="${y+21}" font-size="16" fill="#111827"><tspan font-weight="650">${String(w).replace('.',',')}</tspan>  <tspan fill="#5b6472">${txt}</tspan></text>`;
+  });
+  document.getElementById('rewChart').innerHTML = s + '</svg>';
+})();
+
+/* ---------- Trainings-Kreislauf ---------- */
+(function(){
+  const st = [
+    ['Zug spielen','Aktion a im Zustand s', 'act'],
+    ['Reward','r pro Unit', 'rew'],
+    ['Speichern','(s, a, r, s′) in Buffer', 'train'],
+    ['Batch ziehen','32 zufällige Züge', 'train'],
+    ['Ziel berechnen','y = r + γ·Q_target', 'train'],
+    ['Loss','Huber(Q(s,a), y)', 'train'],
+    ['Gewichte anpassen','Adam-Schritt', 'cnn'],
+  ];
+  const cx = 280, cy = 225, R = 170;
+  let s = `<svg viewBox="0 0 560 450" width="560" xmlns="${NS}">
+    <defs><marker id="ym" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="#9ca3af"/></marker></defs>
+    <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#e5e7eb" stroke-width="10"/>
+    <text x="${cx}" y="${cy-8}" font-size="17" font-weight="650" text-anchor="middle">jeder Zug: 1–3</text>
+    <text x="${cx}" y="${cy+16}" font-size="17" font-weight="650" text-anchor="middle" fill="var(--c-train)">jeder 4. Zug: 4–7</text>
+    <text x="${cx}" y="${cy+42}" font-size="14" text-anchor="middle" fill="#6b7280">ε sinkt in Stufen</text>`;
+  st.forEach(([a,b,c],i) => {
+    const ang = -Math.PI/2 + i*2*Math.PI/st.length;
+    const x = cx + R*Math.cos(ang), y = cy + R*Math.sin(ang);
+    s += `<g><rect x="${x-82}" y="${y-28}" width="164" height="56" rx="10" style="fill:#fff;stroke:${col(c)}" stroke-width="2.5"/>
+      <circle cx="${x-70}" cy="${y-26}" r="11" style="fill:${col(c)}"/><text x="${x-70}" y="${y-21.5}" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">${i+1}</text>
+      <text x="${x}" y="${y-3}" font-size="15.5" font-weight="650" text-anchor="middle">${a}</text>
+      <text x="${x}" y="${y+17}" font-size="13" text-anchor="middle" fill="#4b5563">${b}</text></g>`;
+  });
+  document.getElementById('cycle').innerHTML = s + '</svg>';
+})();
+
+/* ---------- Rechenbeispiel ---------- */
+(function(){
+  const steps = [
+    ['act','1 · Zug','Unit wählt <b>right</b>. Netz schätzt Q(s, right) = <b>1,80</b>.'],
+    ['rew','2 · Reward','auf Punktfeld 0,5 + ein Feld näher 0,2 + 1 Punkt · 0,05 = <b>r = 0,75</b>'],
+    ['train','3 · Später aus dem Buffer','Online-Netz: beste Aktion in s′ ist stay. Target-Netz bewertet sie mit <b>2,00</b>.'],
+    ['train','4 · Ziel','y = 0,75 + 0,98 · 2,00 = <b>2,71</b>'],
+    ['train','5 · Fehler','2,71 − 1,80 = 0,91 → Huber ½ · 0,91² ≈ <b>0,41</b>'],
+    ['cnn','6 · Lernen','Gewichte so ändern, dass Q(s, right) <b>Richtung 2,71</b> steigt.'],
+  ];
+  document.getElementById('stepsEx').innerHTML = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">' +
+    steps.map(([c,h,t]) => `<div class="card" style="border-left:6px solid ${col(c)};padding:10px 14px"><div class="small" style="font-weight:650">${h}</div><div class="small" style="margin-top:2px">${t}</div></div>`).join('') + '</div>';
+})();
+
+/* ---------- Gegner-Streifen ---------- */
+(function(){
+  const M = {
+    'D':['DefaultAgent','#f2c57c',74], 'H':['Hybrid_DQN_AFC','#d9902b',77],
+    '9':['Solution_92_Kaggle','#9aa5b1','3,5'], 'S':['Sherlock Agent_X','#6b7785',8],
+    '8':['Kaggle_8th_gregor','#3e4a57',0], '3':['Kaggle_3rd_lux3','#1c242d',0]};
+  const cv = document.getElementById('oppStrip'), g = cv.getContext('2d');
+  const w = cv.width / OPP.length;
+  for (let i = 0; i < OPP.length; i++){ g.fillStyle = M[OPP[i]][1]; g.fillRect(i*w, 0, Math.ceil(w)+0.5, cv.height); }
+  const cnt = {}; for (const ch of OPP) cnt[ch] = (cnt[ch]||0)+1;
+  document.getElementById('oppLegend').innerHTML = Object.entries(M).map(([k,[n,c,wr]]) =>
+    `<span class="small" style="display:inline-flex;align-items:center;gap:8px"><span style="width:16px;height:16px;border-radius:3px;background:${c};display:inline-block"></span>${n}: ${cnt[k].toLocaleString('de-DE')} Spiele, ${wr} % Siege</span>`).join('');
+})();
+
+/* ---------- Liniendiagramme ---------- */
+function lineChart(el, o){
+  const W = 380, H = 250, m = {l:44, r:14, t:30, b:30};
+  const xmin = 0, xmax = 3039;
+  const X = v => m.l + (v-xmin)/(xmax-xmin)*(W-m.l-m.r);
+  const Y = v => H-m.b - (v-o.ymin)/(o.ymax-o.ymin)*(H-m.t-m.b);
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="${NS}">
+    <text x="${m.l}" y="16" font-size="15" font-weight="650">${o.title}</text>`;
+  o.yticks.forEach(t => s += `<line x1="${m.l}" x2="${W-m.r}" y1="${Y(t)}" y2="${Y(t)}" stroke="#eceef1"/>
+     <text x="${m.l-6}" y="${Y(t)+4}" font-size="11.5" text-anchor="end" fill="#6b7280">${o.fmt(t)}</text>`);
+  [0,1000,2000,3000].forEach(t => s += `<text x="${X(t)}" y="${H-10}" font-size="11.5" text-anchor="middle" fill="#6b7280">${t.toLocaleString('de-DE')}</text>`);
+  (o.marks||[]).forEach(([xv,lab]) => s += `<line x1="${X(xv)}" x2="${X(xv)}" y1="${m.t}" y2="${H-m.b}" stroke="#9ca3af" stroke-dasharray="3 3"/>
+     <text x="${X(xv)+4}" y="${m.t+10}" font-size="11" fill="#6b7280">${lab}</text>`);
+  o.series.forEach(se => {
+    const pts = S.x.map((xv,i) => `${X(xv).toFixed(1)},${Y(se.y[i]).toFixed(1)}`).join(' ');
+    s += `<polyline points="${pts}" fill="none" stroke="${se.c}" stroke-width="${se.w||2.6}" ${se.dash?'stroke-dasharray="5 4"':''}/>`;
+    const last = se.y[se.y.length-1];
+    s += `<text x="${W-m.r}" y="${Y(last)+(se.dy||-7)}" font-size="12" text-anchor="end" fill="${se.c}" font-weight="650">${se.label}</text>`;
+  });
+  el.innerHTML = s + '</svg>';
+}
+const pct = v => v + ' %';
+lineChart(document.getElementById('chPts'), {title:'Ø Punkte pro Spiel', ymin:0, ymax:400, yticks:[0,100,200,300,400], fmt:v=>v,
+  series:[{y:S.punkte, c:'var(--c-rew)', label:''}]});
+lineChart(document.getElementById('chWin'), {title:'Siegquote', ymin:0, ymax:100, yticks:[0,25,50,75,100], fmt:pct,
+  series:[{y:S.win_weak, c:'#d9902b', label:'Default + Hybrid'},{y:S.win_strong, c:'#3e4a57', label:'4 starke Gegner'}]});
+lineChart(document.getElementById('chQ'), {title:'Ø Q-Wert  und  ε × 4 (gestrichelt)', ymin:0, ymax:4, yticks:[0,1,2,3,4], fmt:v=>String(v),
+  marks:[[332,'ε 0,05'],[1520,'ε 0,1']],
+  series:[{y:S.q, c:'var(--c-cnn)', label:'Q', dy:-8},{y:S.eps.map(v=>v*4), c:'#6b7280', label:'ε', dash:true, w:2, dy:-6}]});
+
+/* ---------- Navigation ---------- */
+const slides = [...document.querySelectorAll('.slide')];
+const mainCount = slides.filter(s => !s.classList.contains('backup')).length;
+let cur = 0;
+function show(i){
+  cur = Math.max(0, Math.min(slides.length-1, i));
+  slides.forEach((s,k) => s.classList.toggle('on', k===cur));
+  const bk = slides[cur].classList.contains('backup');
+  document.getElementById('num').textContent = bk ? `Backup ${cur-mainCount+1}` : `${cur+1} / ${mainCount}`;
+  document.getElementById('bar').style.width = (Math.min(cur+1, mainCount)/mainCount*100) + '%';
+  if (location.hash !== '#'+(cur+1)) history.replaceState(null, '', '#'+(cur+1));
+}
+function fit(){
+  const s = Math.min(innerWidth/1280, innerHeight/720);
+  document.getElementById('stage').style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+addEventListener('resize', fit);
+addEventListener('keydown', e => {
+  if (['ArrowRight','PageDown',' ','Enter'].includes(e.key)) { e.preventDefault(); show(cur+1); }
+  else if (['ArrowLeft','PageUp','Backspace'].includes(e.key)) { e.preventDefault(); show(cur-1); }
+  else if (e.key === 'Home') show(0);
+  else if (e.key === 'End') show(mainCount-1);
+});
+addEventListener('hashchange', () => { const n = parseInt(location.hash.slice(1)); if (n && n-1 !== cur) show(n-1); });
+document.getElementById('prev').onclick = () => show(cur-1);
+document.getElementById('next').onclick = () => show(cur+1);
+fit();
+show((parseInt(location.hash.slice(1)) || 1) - 1);
+</script>
+</body>
+</html>

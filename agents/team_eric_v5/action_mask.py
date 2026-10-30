@@ -35,3 +35,9 @@ RULES = [                      # aktive Regeln; vorerst keine
 
 def allowed_actions(w, unit):
     return np.array([not any(rule(w, unit, a) for rule in RULES) for a in range(len(MOVES))])
+
+
+def can_sap(w):
+    """(N,) bool: Unit lebt und hat genug Energie. Spielregel der Engine, keine Strategie.
+    Reichweite und Kartenrand prüft model.py (reine Geometrie)."""
+    return w.my_alive & (w.my_energy >= w.unit_sap_cost)

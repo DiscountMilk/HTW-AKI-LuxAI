@@ -45,8 +45,9 @@ BATCH_SIZE    = 32          # Züge pro Lernschritt (je Zug mehrere Units)
 BUFFER_SIZE   = 10_000      # Züge im Replay-Buffer (ca. 16 Spiele Selbstspiel)
 TRAIN_EVERY   = 4           # nur jeden 4. Zug lernen (spart Zeit)
 TARGET_SYNC   = 1_000       # alle N Lernschritte Target-Netz nachziehen
-EPS_START, EPS_END, EPS_STEPS = 1.0, 0.1, 250_000   # ε linear über so viele Trainingszüge ...
-EPS_EVERY     = 5_000       # ... aber nur alle N Trainingszüge eine Stufe runter (Treppe)
+EPS_START, EPS_END, EPS_STEPS = 1.0, 0.1, 500_000   # ε linear über so viele Trainingszüge ...
+EPS_EVERY     = 10_000       # ... aber nur alle N Trainingszüge eine Stufe runter (Treppe)
+CHECKPOINTS   = (1_000, 2_500, 5_000, 10_000)   # nach so vielen Spielen eine Kopie: checkpoints/agent_1000.pth
 
 
 # =====================================================================
@@ -105,6 +106,7 @@ class Model:
         self.opt = torch.optim.Adam(self.net.parameters(), lr=LEARNING_RATE)
         self.buffer = ReplayBuffer(BUFFER_SIZE)
         self.steps = 0                         # gesehene Trainings-Züge (für ε)
+        self.games = 0                         # fertig trainierte Spiele (für Checkpoints)
         self.updates = 0                       # Lernschritte (für Target-Sync)
         self.loss_sum = self.q_sum = 0.0       # fürs Log: Summen über alle Lernschritte
 
@@ -188,13 +190,20 @@ class Model:
 
     # ---------- Speichern ----------
     def save(self, path):
-        torch.save({"net": self.net.state_dict(), "steps": self.steps}, path)
+        """Netz + Zähler speichern. Bei einer Spielzahl aus CHECKPOINTS zusätzlich eine Kopie in checkpoints/."""
+        state = {"net": self.net.state_dict(), "steps": self.steps, "games": self.games}
+        torch.save(state, path)
+        if self.games in CHECKPOINTS:
+            folder = os.path.join(os.path.dirname(os.path.abspath(path)), "checkpoints")
+            os.makedirs(folder, exist_ok=True)
+            torch.save(state, os.path.join(folder, f"agent_{self.games}.pth"))
 
     def load(self, path):
         state = torch.load(path, map_location=self.device)
         self.net.load_state_dict(state["net"])
         self.target.load_state_dict(state["net"])
         self.steps = state["steps"]
+        self.games = state.get("games", 0)        # alte .pth ohne Spielzähler: ab 0 zählen
 
     # ---------- Hilfe ----------
     def _tensors(self, maps, glob):

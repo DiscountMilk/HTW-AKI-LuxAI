@@ -27,7 +27,7 @@ from agents.team_eric_v5.reward import TERMS, reward_parts
 LOG_PATH = os.path.join(os.path.dirname(__file__), "logging", "training_log.csv")
 EVAL_PATH = os.path.join(os.path.dirname(__file__), "logging", "eval_log.csv")
 TRAIN_ONLY = ("loss", "q", "lernschritte", "trainingszuege", "epsilon")   # fehlen in eval_log.csv
-ACTION_NAMES = ["stay", "up", "right", "down", "left"]   # Index = Aktions-Typ
+ACTION_NAMES = ["stay", "up", "right", "down", "left", "sap"]   # Index = Aktions-Typ
 WINDOW = 10                                               # Zeilen pro gleitendem Schnitt im Plot
 
 

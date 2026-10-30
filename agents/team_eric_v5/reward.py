@@ -10,7 +10,8 @@ IDEE
 
     Team-Terme   (gleicher Wert für jede Unit): Punkte, Match-Ergebnis, Erkunden
     Unit-Terme   (eigener Wert pro Unit):       steht auf Punkt-Feld, steht mit anderen auf einem Feld,
-                                                steht auf Feld mit positiver Energie, kommt freiem Punkt-Feld näher
+                                                steht auf Feld mit positiver Energie, kommt freiem Punkt-Feld näher,
+                                                Ergebnis des eigenen Saps
 
 AUFBAU
     TERMS               Liste (Methode, Gewicht)
@@ -30,6 +31,8 @@ REGELN
 import numpy as np
 
 from agents.team_eric_v5.features import MAX_TILE_ENERGY
+
+SAP_DROPOFF = 0.5   # Treffer auf den 8 Nachbarfeldern; ponytail: echter Faktor ist verborgen (0.25, 0.5 oder 1)
 
 
 # =====================================================================
@@ -116,11 +119,24 @@ def toward_point_tile(w):
     return r
 
 
+def sap_result(w):
+    """Sap der Unit im letzten Zug: Treffer - 1 (nichts getroffen = -1, die Energie war umsonst).
+    Treffer = sichtbare Gegner NACH ihrem Zug: 1 auf dem Zielfeld, SAP_DROPOFF auf den 8 Nachbarfeldern."""
+    # ponytail: ein getöteter Gegner ist danach unsichtbar und zählt nicht; wird gezählt, sobald Kills messbar sind
+    r = np.zeros(w.max_units, dtype=np.float32)
+    enemies = w.opp_pos[w.opp_visible]
+    for i in np.flatnonzero(w.sap_targets[:, 0] >= 0):
+        d = np.abs(enemies - w.sap_targets[i]).max(axis=1)      # Abstand im Quadrat: 0 Zielfeld, 1 Nachbarfeld
+        r[i] = (d == 0).sum() + SAP_DROPOFF * (d == 1).sum() - 1
+    return r
+
+
 TERMS = [                      # Funktion,       Gewicht
     (on_point_tile,  0.5),     # pro Unit: auf Punkt-Feld stehen
     (stacked,       -0.5),     # pro Unit: Feld mit eigenen Units teilen
     (energy_tile,    0.1),     # pro Unit: auf Feld mit positiver Energie stehen (max 0.1)
     (toward_point_tile, 0.2),  # pro Unit: ein Feld näher an freies Punkt-/Kandidaten-Feld (+0.1 / -0.1)
+    (sap_result,     0.2),     # pro Unit: Treffer des eigenen Saps - 1
     (points,         0.05),    # Team: Punkte im letzten Zug
     (match_result,   5.0),     # Team: Match gewonnen / verloren
     (new_tiles,      0.01),    # Team: Karte erkunden

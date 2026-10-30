@@ -49,6 +49,7 @@ class World:
         self.my_respawned = np.zeros(N, bool)     # gestorben und im selben Zug neu gespawnt (gleiche ID, andere Unit)
         self.my_prev_pos   = np.full((N, 2), -1)   # Position / lebt? vor dem letzten update() (für Reward "näher gekommen")
         self.my_prev_alive = np.zeros(N, bool)
+        self.sap_targets   = np.full((N, 2), -1)   # Zielfeld des letzten Saps je Unit, -1 = kein Sap (für Reward)
 
         # ---------- UNIT values: Gegner ----------
         self.opp_pos       = np.full((N, 2), -1)   # zuletzt gesehene Position
@@ -175,6 +176,11 @@ class World:
         """Ein einzelnes Feld spiegeln: (x, y) -> (W-1-y, H-1-x)."""
         return self.W - 1 - y, self.H - 1 - x
 
+    def merke_saps(self, actions):
+        """Zielfelder der gewählten Saps merken. actions (N, 3) mit [5, dx, dy]."""
+        sap = actions[:, 0] == 5
+        self.sap_targets = np.where(sap[:, None], self.my_pos + actions[:, 1:], -1)
+
     def point_tile_candidates(self):
         """(W, H) bool: Feld noch ungeprüft (-1) und nahe einer bekannten Relic -> kann Punkte bringen."""
         near = np.zeros((self.W, self.H), dtype=bool)
@@ -197,6 +203,7 @@ class World:
         self.opp_energy    = np.zeros(N)
         self.opp_visible   = np.zeros(N, bool)
         self.opp_last_seen = np.full(N, -1)
+        self.sap_targets   = np.full((N, 2), -1)
 
     def _learn_point_tiles(self):
         """

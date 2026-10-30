@@ -17,7 +17,7 @@ obs ──► World.update()   Gedächtnis aktualisieren
   FeatureEngineering.encode(world)   Welt → Zahlen  (maps, globals)
         │
         ▼
-  Model.choose(x, pos, alive, mask)  Aktion pro Unit (pos = ihr Feld)
+  Model.choose(x, pos, alive, mask, sap_ok, sap_range)  Aktion pro Unit (Bewegung oder Sap)
         │
         ▼
   actions (max_units, 3)  ──► Spiel
@@ -37,6 +37,8 @@ next_obs ──► World.update() ──► compute_reward(world) ──► Mode
 | `reward.py` | Belohnung aus der World berechnen. | Netz kennen |
 | `model.py` | CNN, Aktionswahl, Training, Replay-Buffer, Speichern. | World direkt lesen (nur Features) |
 | `logger.py` | Kennzahlen pro Spiel: Konsole + `logging/training_log.csv`, Plot. | Entscheidungen treffen |
+| `mirror.py` | Spieler 1: obs spiegeln, Aktionen zurückdrehen. Selbsttest: `.venv/bin/python -m agents.team_eric_v5.mirror` | Logik außer Spiegeln enthalten |
+| `test_sap.py` | Selbsttest Sap: `.venv/bin/python -m agents.team_eric_v5.test_sap` | – |
 
 Status: alle Dateien da, Selbstspiel-Training läuft. In `Paths.csv` als Gruppe 8 (`agents/team_eric_v4/agent.pth`).
 
@@ -45,6 +47,7 @@ Status: alle Dateien da, Selbstspiel-Training läuft. In `Paths.csv` als Gruppe 
 - Aktion verboten, wenn eine Regel in `RULES` True liefert. Regel = Funktion `(w, unit, action) -> bool`
 - Vorerst keine Regel aktiv (alles erlaubt). Vorhanden, aber auskommentiert: `no_energy`, `blocked`
 - Verbietet eine Regel alles, erlaubt `model.py` STAY
+- `can_sap(world)` → `(N,)` bool: lebt und Energie ≥ `unit_sap_cost`. Nur Engine-Regel, keine Strategie. Reichweite und Kartenrand prüft `model.py` (`_sap_area`)
 
 ## Logging (logger.py)
 - Ein `Logger` pro Spiel und Spieler (`set_env_cfg`), nur im Training (`update`): zählt in `act`/`update`, schreibt bei `terminated`
@@ -74,8 +77,9 @@ Status: alle Dateien da, Selbstspiel-Training läuft. In `Paths.csv` als Gruppe 
 - Funktionen: `World.mirror(array)` und `World.mirror_pos(x, y)`
 - Richtungen gespiegelt: up ↔ right, down ↔ left, sap-Ziel `(dx, dy) → (−dy, −dx)`
 
-**Spieler 1**: Das Netz soll sich immer als Spieler 0 sehen.
-→ Features für Spieler 1 spiegeln, gewählte Aktionen zurückspiegeln. (TODO)
+**Spieler 1**: Das Netz sieht sich immer als Spieler 0.
+→ `mirror.py`: `agent.act` spiegelt die obs (`obs_als_spieler0`, Teams getauscht) und dreht die Aktionen zurück (`aktionen_zurueck`). World ist intern immer Team 0.
+→ Trainiert wird nur als Spieler 0: `update()` kehrt bei Spieler 1 sofort zurück. Logger bekommt den echten `team_id`.
 
 **Werte im World-Gedächtnis**
 - `tile_type`: −1 unbekannt, 0 leer, 1 Nebel, 2 Asteroid
@@ -92,24 +96,28 @@ Status: alle Dateien da, Selbstspiel-Training läuft. In `Paths.csv` als Gruppe 
 ## Reward (reward.py)
 - `compute_reward(world)` → `(max_units,)`, ein Wert pro Unit, Aufruf NACH `World.update(next_obs)`
 - Team-Terme (Punkte, Match-Ergebnis, Erkunden, Relic gefunden) bekommt jede Unit gleich
-- Unit-Terme: steht auf sicherem Punkt-Feld (geteilt durch eigene Units dort); `stacked` −0.2, wenn die Unit ihr Feld mit eigenen Units teilt; `energy_tile` bis 0.1 je nach positiver Feldenergie (Gewicht muss < `on_point_tile` bleiben, Assert in reward.py); `toward_point_tile` ±0.1 pro Feld näher/weiter zum nächsten freien Ziel (sicheres Punkt-Feld oder ungeprüftes Feld nahe Relic, `world.point_tile_candidates()`) (braucht `world.my_prev_pos` / `my_prev_alive`)
+- Unit-Terme: steht auf sicherem Punkt-Feld (geteilt durch eigene Units dort); `stacked` −0.2, wenn die Unit ihr Feld mit eigenen Units teilt; `energy_tile` bis 0.1 je nach positiver Feldenergie (Gewicht muss < `on_point_tile` bleiben, Assert in reward.py); `toward_point_tile` ±0.1 pro Feld näher/weiter zum nächsten freien Ziel (sicheres Punkt-Feld oder ungeprüftes Feld nahe Relic, `world.point_tile_candidates()`) (braucht `world.my_prev_pos` / `my_prev_alive`); `sap_result` 0.2 · (Treffer − 1): sichtbare Gegner nach ihrem Zug, 1 auf dem Zielfeld, 0.5 auf den 8 Nachbarfeldern (braucht `world.merke_saps`)
 - Neuer Term: Funktion `(w) -> (max_units,)` + Zeile in `TERMS`
 - Was „seit dem letzten Zug“ passiert ist, merkt sich die World:
   `points_gained`, `match_result` (+1/−1 im Zug nach Matchende), `new_tiles`, `new_relics`
 
 ## Netz (model.py)
-- Vollständig faltend: Ausgang `(Aktionen, W, H)` = Q-Wert pro Aktion und Feld
+- Vollständig faltend: Ausgang `(Aktionen + 1, W, H)` = Q-Wert pro Bewegung und Feld + Sap-Karte
+- Sap-Karte (Kanal `SAP` = 5): Q für „Sap auf dieses Feld“, gelesen am ZIELFELD. Das Netz entscheidet ob und wohin: bestes Feld in Reichweite gegen die gewählte Bewegung
 - `globals` als konstante Kanäle an die Karte anhängen
-- Q-Werte einer Unit = Ausgang an ihrer Position `(x, y)`
+- Q-Werte der Bewegungen = Ausgang an der Position der Unit `(x, y)`
+- ε: Sap zählt wie EINE Aktion, dann Zufallsfeld in Reichweite
+- `load()` übernimmt alte `.pth` mit 5 Ausgängen: Bewegungs-Kanäle kopiert, Sap-Kanal neu
 - Verbotene Aktionen (Maske) → `-inf` vor `argmax` / `max`. Darf eine Unit nichts, ist STAY erlaubt
 - Mehrere Units auf einem Feld: k-te Unit nimmt die k-tbeste erlaubte Aktion (sonst laufen sie ewig zusammen)
 - Ein Netzaufruf pro Zug für alle Units
 - Training: Target-Netz, Double DQN, Huber-Loss
 - Ein Modell pro Pfad (`get_model(path)`): bleibt über alle Spiele, beide Spieler teilen es
-- `save()` speichert nur Netz + `steps` (kein Optimizer, kein Buffer)
+- `save()` speichert nur Netz + `steps` + `games` (kein Optimizer, kein Buffer)
+- Checkpoints: nach 1.000 / 2.500 / 5.000 / 10.000 Spielen (`CHECKPOINTS`) zusätzlich Kopie in `checkpoints/agent_<spiele>.pth` neben der `.pth`
 - Schnittstelle zu `agent.py`:
-  - `choose(x, pos, alive, mask, explore)` → `(N, 3)` mit `[typ, dx, dy]` pro Unit
-  - `train_step(x, pos, alive, actions, reward, next_x, next_pos, next_alive, next_mask, done)`
+  - `choose(x, pos, alive, mask, sap_ok, sap_range, explore)` → `(N, 3)` mit `[typ, dx, dy]` pro Unit
+  - `train_step(x, pos, alive, actions, reward, next_x, next_pos, next_alive, next_mask, next_sap_ok, sap_range, done)`
     - `x`, `next_x`: `(maps, globals)` vor / nach dem Zug
     - `pos`, `next_pos`: `(N, 2)` · `alive`, `next_alive`: `(N,)` · `actions`: `(N, 3)` · `reward`: `(N,)`
     - `mask`, `next_mask`: `(N, A)` erlaubte Aktionen (`next_mask` für argmax im Target)

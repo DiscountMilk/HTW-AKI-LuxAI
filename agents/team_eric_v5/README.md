@@ -39,6 +39,17 @@ V3:
    - Frei = keine andere eigene Unit steht drauf -> sind die Felder an Relic 1 besetzt, ziehen übrige Units zu Relic 2
    - Netz und Features unverändert (gleiche Kanäle), `agent.pth` passt weiter
    - Grenze: bleibt ein Feld an Relic 1 dauerhaft unklar, bleibt es Ziel -> Units können dort hängen. Dann Gewicht von `toward_point_tile` erhöhen (0.1 -> 0.2)
+7. **Spieler 1 gespiegelt** -> Ziel: als Spieler 1 mit denselben Gewichten spielen, trainiert wird nur als Spieler 0
+   - `mirror.py`: Observation von Spieler 1 wird gespiegelt `(x, y) -> (W-1-y, H-1-x)` und die Teams getauscht -> der Agent sieht sich als Spieler 0 mit Start (0, 0)
+   - Gewählte Aktionen werden zurückgedreht: up <-> right, down <-> left
+   - World, Features, Reward, Maske, Modell unverändert; `update()` tut als Spieler 1 nichts (kein Training)
+   - Test 29.10.: gleiche 20 Seeds gegen Solution_92, als Spieler 0 und als Spieler 1 je 1 von 20 Spielen gewonnen, 18 Seeds mit identischem Ergebnis
+8. **SAP, komplett vom Netz entschieden** -> Ziel: Gegner gezielt schwächen
+   - Netz: 6. Ausgangskanal = Sap-Karte. Q für „Sap auf dieses Feld“, gelesen am Zielfeld. Die Unit vergleicht ihre Bewegungen mit dem besten Feld in Reichweite
+   - Keine Strategie-Regeln, nur die Bedingungen der Engine: Energie, Reichweite, Kartenrand
+   - Reward `sap_result`: 0.2 · (Treffer − 1), Fehlschuss = Strafe
+   - `agent.pth` wird übernommen (Bewegungen gleich, Sap-Kanal neu), Sicherung: `agent_vor_sap.pth`
+   - Grenze: alle Units sehen denselben Sap-Wert je Feld; getötete Gegner zählen nicht als Treffer
 
 **Einfluss (Erst nach Trainings und Evalphase ausfüllen)**
 1. xxx
@@ -47,6 +58,8 @@ V3:
 4. 
 5. 
 6. Units erkunden andere Seite
+7. 
+8. 
 
 # Nächste Woche
 
