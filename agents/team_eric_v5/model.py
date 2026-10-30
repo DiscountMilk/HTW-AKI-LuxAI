@@ -6,8 +6,10 @@ Kennt die World NICHT, bekommt nur Features (x), Positionen und Masken.
 IDEE
     Ein vollständig faltendes Netz: Karte rein, Karte raus.
         Eingang  (C + G, W, H)   Karten-Features + globale Werte als konstante Kanäle
-        Ausgang  (A, W, H)       Q-Wert pro Aktion und Feld
-    Q-Werte einer Unit = Ausgang an ihrer Position (x, y).
+        Ausgang  (A + 1, W, H)   Q-Wert pro Bewegung und Feld + Sap-Karte
+    Q-Werte einer Bewegung = Ausgang an der Position der Unit (x, y).
+    Sap-Karte (letzter Kanal): Q für "Sap auf DIESES Feld", gelesen am ZIELFELD.
+    Eine Unit vergleicht ihre 5 Bewegungen mit den Sap-Werten aller Felder in Reichweite.
     Ein Netzaufruf pro Zug für alle Units.
 
     Dilatierte Faltungen (Abstand 1, 2, 4, 8, 16, 1): jedes Feld "sieht" die ganze Karte,
@@ -32,7 +34,8 @@ import torch.nn as nn
 from agents.team_eric_v5.features import FeatureEngineering
 
 # ---------- Aktionen ----------
-N_ACTIONS = 5               # 0 stay, 1 up, 2 right, 3 down, 4 left (Sap fehlt noch)
+N_ACTIONS = 5               # Bewegungen: 0 stay, 1 up, 2 right, 3 down, 4 left
+SAP = 5                     # Aktions-Typ Sap = Kanal der Sap-Karte
 
 # ---------- Netz ----------
 HIDDEN    = 32              # Kanäle in den versteckten Schichten
@@ -61,7 +64,7 @@ class Net(nn.Module):
         for d in DILATIONS:
             layers += [nn.Conv2d(c, HIDDEN, 3, padding=d, dilation=d), nn.ReLU()]
             c = HIDDEN
-        layers.append(nn.Conv2d(HIDDEN, N_ACTIONS, 1))       # 1x1: Q pro Aktion
+        layers.append(nn.Conv2d(HIDDEN, N_ACTIONS + 1, 1))   # 1x1: Q pro Bewegung + Sap-Karte
         self.body = nn.Sequential(*layers)
 
     def forward(self, maps, glob):
@@ -73,7 +76,8 @@ class Net(nn.Module):
 # =====================================================================
 # Replay-Buffer: Ring aus festen numpy-Arrays, platzsparend
 # =====================================================================
-DTYPES = dict(maps=np.float16, next_maps=np.float16, pos=np.int8, next_pos=np.int8, actions=np.int8)
+DTYPES = dict(maps=np.float16, next_maps=np.float16, pos=np.int8, next_pos=np.int8, actions=np.int8,
+              sap_target=np.int8, sap_range=np.int8)
 
 
 class ReplayBuffer:
@@ -115,8 +119,9 @@ class Model:
         f = min(self.steps // EPS_EVERY * EPS_EVERY / EPS_STEPS, 1.0)
         return EPS_START + f * (EPS_END - EPS_START)
 
-    def choose(self, x, pos, alive, mask, explore=True):
-        """Aktionen für alle Units. x = (maps, globals), pos (N, 2), alive (N,), mask (N, A) -> (N, 3)."""
+    def choose(self, x, pos, alive, mask, sap_ok, sap_range, explore=True):
+        """Aktionen für alle Units. x = (maps, globals), pos (N, 2), alive (N,), mask (N, A),
+        sap_ok (N,) genug Energie, sap_range Reichweite -> (N, 3) mit [typ, dx, dy]."""
         actions = np.zeros((len(alive), 3), dtype=int)
         units = np.flatnonzero(alive)
         if len(units) == 0:
@@ -124,8 +129,8 @@ class Model:
         mask = _stay_allowed(mask)[units]
 
         with torch.no_grad():
-            q = self.net(*self._tensors([x[0]], [x[1]]))[0].cpu().numpy()   # (A, W, H)
-        q = q[:, pos[units, 0], pos[units, 1]].T                           # (K, A)
+            out = self.net(*self._tensors([x[0]], [x[1]]))[0].cpu().numpy() # (A + 1, W, H)
+        q = out[:N_ACTIONS, pos[units, 0], pos[units, 1]].T                 # (K, A)
         q[~mask] = -np.inf                                                  # verboten -> nie wählen
         order = np.argsort(-q, axis=1)                                      # beste Aktion zuerst, verbotene hinten
         best = order[:, 0].copy()
@@ -138,20 +143,42 @@ class Model:
             seen[t] = seen.get(t, -1) + 1
             best[k] = order[k, seen[t] % mask[k].sum()]
 
+        # Sap: bestes Feld in Reichweite gegen die gewählte Bewegung
+        sap_map, area = out[SAP], _sap_area(pos[units], sap_range, out.shape[1:])
+        area[~np.asarray(sap_ok)[units]] = False
+        for k, u in enumerate(units):
+            if area[k].any():
+                t = np.unravel_index(np.argmax(np.where(area[k], sap_map, -np.inf)), sap_map.shape)
+                if sap_map[t] > q[k, best[k]]:
+                    actions[u] = (SAP, t[0] - pos[u, 0], t[1] - pos[u, 1])
+
         if explore:                                                         # ε-greedy pro Unit
             for k in np.flatnonzero(np.random.rand(len(units)) < self.epsilon()):
-                best[k] = np.random.choice(np.flatnonzero(mask[k]))
-        actions[units, 0] = best
+                u, moves = units[k], np.flatnonzero(mask[k])
+                # Sap zählt wie EINE Aktion, sonst wären fast alle Zufallszüge Saps (bis zu 225 Felder)
+                if area[k].any() and np.random.randint(len(moves) + 1) == 0:
+                    tiles = np.argwhere(area[k])
+                    tx, ty = tiles[np.random.randint(len(tiles))]
+                    actions[u] = (SAP, tx - pos[u, 0], ty - pos[u, 1])
+                else:
+                    actions[u] = 0
+                    best[k] = np.random.choice(moves)
+
+        move = actions[units, 0] != SAP
+        actions[units[move], 0] = best[move]
         return actions
 
     # ---------- Training ----------
-    def train_step(self, x, pos, alive, actions, reward, next_x, next_pos, next_alive, next_mask, done):
+    def train_step(self, x, pos, alive, actions, reward, next_x, next_pos, next_alive, next_mask,
+                   next_sap_ok, sap_range, done):
         """Übergang speichern und ab und zu einen Lernschritt machen."""
         if not alive.any():                       # z.B. Matchanfang: keine Unit hat gehandelt
             return
         self.buffer.push(maps=x[0], glob=x[1], pos=pos, alive=alive, actions=actions[:, 0],
+                         sap_target=pos + actions[:, 1:], sap_range=sap_range,
                          reward=reward, next_maps=next_x[0], next_glob=next_x[1], next_pos=next_pos,
-                         next_alive=next_alive, next_mask=_stay_allowed(next_mask), done=bool(done))
+                         next_alive=next_alive, next_mask=_stay_allowed(next_mask),
+                         next_sap_ok=next_sap_ok, done=bool(done))
         self.steps += 1
         if self.buffer.n >= BATCH_SIZE and self.steps % TRAIN_EVERY == 0:
             self._learn(self.buffer.sample(BATCH_SIZE))
@@ -161,19 +188,34 @@ class Model:
         px, py = b["pos"][bi, ui].T.astype(int)
         nx, ny = np.maximum(b["next_pos"][bi, ui], 0).T.astype(int)         # tote Units: -1 -> 0 (zählt eh nicht)
         a = b["actions"][bi, ui].astype(int)
+        sap = a == SAP
+        qx, qy = np.where(sap, b["sap_target"][bi, ui].T.astype(int), (px, py))   # Sap liest am Zielfeld
+        nok = b["next_sap_ok"][bi, ui]
+        nrange = b["sap_range"][bi].astype(int)
         r = torch.as_tensor(b["reward"][bi, ui], device=self.device)
         go_on = torch.as_tensor(b["next_alive"][bi, ui] & ~b["done"][bi], device=self.device).float()
         nmask = torch.as_tensor(b["next_mask"][bi, ui], device=self.device)
-        bi, ui, px, py, nx, ny, a = (torch.as_tensor(v, device=self.device) for v in (bi, ui, px, py, nx, ny, a))
+        bi, ui, qx, qy, nx, ny, a = (torch.as_tensor(v, device=self.device) for v in (bi, ui, qx, qy, nx, ny, a))
 
-        q = self.net(*self._tensors(b["maps"], b["glob"]))[bi, a, px, py]  # Q(s, a) pro Unit
+        q = self.net(*self._tensors(b["maps"], b["glob"]))[bi, a, qx, qy]  # Q(s, a) pro Unit
 
         with torch.no_grad():
             nmaps, nglob = self._tensors(b["next_maps"], b["next_glob"])
-            q_next = self.net(nmaps, nglob)[bi, :, nx, ny]                  # (K, A) Online-Netz wählt ...
+            online, tgt = self.net(nmaps, nglob), self.target(nmaps, nglob)
+            q_next = online[bi, :N_ACTIONS, nx, ny]                         # (K, A) Online-Netz wählt ...
             q_next[~nmask] = -float("inf")
-            a_next = q_next.argmax(dim=1)
-            q_eval = self.target(nmaps, nglob)[bi, a_next, nx, ny]          # ... Target-Netz bewertet
+            best_move, a_next = q_next.max(dim=1)
+            q_eval = tgt[bi, a_next, nx, ny]                                # ... Target-Netz bewertet
+
+            # dasselbe für Sap: bestes erlaubtes Feld um next_pos
+            area = _sap_area(np.stack([nx.cpu().numpy(), ny.cpu().numpy()], axis=1), nrange, online.shape[2:])
+            area[~nok] = False
+            area = torch.as_tensor(area, device=self.device)
+            s_next = online[bi, SAP].masked_fill(~area, -float("inf")).flatten(1)
+            best_sap, t_next = s_next.max(dim=1)
+            H = online.shape[3]
+            sap_eval = tgt[bi, SAP, t_next // H, t_next % H]
+            q_eval = torch.where(best_sap > best_move, sap_eval, q_eval)
             y = r + GAMMA * go_on * q_eval
 
         loss = nn.functional.smooth_l1_loss(q, y)                           # Huber
@@ -200,6 +242,12 @@ class Model:
 
     def load(self, path):
         state = torch.load(path, map_location=self.device)
+        # Alte .pth ohne Sap-Karte: Bewegungs-Kanäle übernehmen, Sap-Kanal bleibt neu
+        net = self.net.state_dict()
+        for k, v in state["net"].items():
+            if v.shape != net[k].shape:
+                net[k][:v.shape[0]] = v
+                state["net"][k] = net[k]
         self.net.load_state_dict(state["net"])
         self.target.load_state_dict(state["net"])
         self.steps = state["steps"]
@@ -210,6 +258,15 @@ class Model:
         """numpy (float16/32) -> float32-Tensoren auf dem Gerät."""
         return (torch.as_tensor(np.asarray(maps, dtype=np.float32), device=self.device),
                 torch.as_tensor(np.asarray(glob, dtype=np.float32), device=self.device))
+
+
+def _sap_area(pos, sap_range, size):
+    """(K, W, H) bool: Felder im Quadrat um jede Position. pos (K, 2), sap_range Zahl oder (K,), size (W, H)."""
+    pos, r = np.asarray(pos), np.asarray(sap_range)
+    xs, ys = np.arange(size[0])[None, :], np.arange(size[1])[None, :]
+    near_x = np.abs(xs - pos[:, :1]) <= (r[:, None] if r.ndim else r)
+    near_y = np.abs(ys - pos[:, 1:]) <= (r[:, None] if r.ndim else r)
+    return near_x[:, :, None] & near_y[:, None, :]
 
 
 def _stay_allowed(mask):
